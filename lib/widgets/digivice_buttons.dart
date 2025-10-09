@@ -63,7 +63,7 @@ class DigiviceButtons extends StatelessWidget {
             color: Colors.white70,
             fontSize: 12,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Courier New',
+            fontFamily: 'Pixel Digivolve',
           ),
         ),
       ],

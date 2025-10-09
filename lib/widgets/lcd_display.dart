@@ -92,7 +92,7 @@ class LCDDisplay extends StatelessWidget {
                       color: Colors.black,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Courier New',
+                      fontFamily: 'Pixel Digivolve',
                     ),
                   ),
                   Row(
@@ -137,7 +137,7 @@ class LCDDisplay extends StatelessWidget {
               style: const TextStyle(
                 color: Color(0xFF5A6B5D),
                 fontSize: 12,
-                fontFamily: 'Courier New',
+                fontFamily: 'Pixel Digivolve',
               ),
             ),
           ),
@@ -159,7 +159,7 @@ class LCDDisplay extends StatelessWidget {
                     color: Colors.black,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    fontFamily: 'Courier New',
+                    fontFamily: 'Pixel Digivolve',
                   ),
                 ),
               ),
@@ -174,7 +174,7 @@ class LCDDisplay extends StatelessWidget {
               style: const TextStyle(
                 color: Color(0xFF5A6B5D),
                 fontSize: 12,
-                fontFamily: 'Courier New',
+                fontFamily: 'Pixel Digivolve',
               ),
             ),
           ),
@@ -190,7 +190,7 @@ class LCDDisplay extends StatelessWidget {
         color: Colors.black,
         fontSize: 14,
         fontWeight: FontWeight.bold,
-        fontFamily: 'Courier New',
+        fontFamily: 'Pixel Digivolve',
       ),
     );
   }
