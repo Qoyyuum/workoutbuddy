@@ -1,6 +1,6 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
-import 'digimon_component.dart';
+import 'workout_buddy_component.dart';
 
 class PixelSpriteComponent extends CustomPainterComponent {
   List<List<int>> sprite;
@@ -41,7 +41,7 @@ class PixelSpritePainter extends CustomPainter {
     for (int y = 0; y < sprite.length; y++) {
       for (int x = 0; x < sprite[y].length; x++) {
         final colorIndex = sprite[y][x];
-        final color = DigimonComponent.colorPalette[colorIndex] ?? Colors.transparent;
+        final color = WorkoutBuddyComponent.colorPalette[colorIndex] ?? Colors.transparent;
         
         if (color != Colors.transparent) {
           final paint = Paint()..color = color;

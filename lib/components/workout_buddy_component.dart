@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-class DigimonComponent extends Component {
+class WorkoutBuddyComponent extends Component {
   String name;
   int level;
   int health;
@@ -13,7 +13,7 @@ class DigimonComponent extends Component {
   int age;
   List<List<int>> sprite;
   
-  DigimonComponent({
+  WorkoutBuddyComponent({
     this.name = '',
     this.level = 1,
     this.health = 100,
@@ -31,7 +31,7 @@ class DigimonComponent extends Component {
 
   void _generateRandom() {
     final random = Random();
-    final names = ['Agumon', 'Gabumon', 'Patamon', 'Tentomon', 'Biyomon', 'Palmon'];
+    final names = ['Buddy', 'Sparky', 'Flash', 'Thunder', 'Blaze', 'Storm'];
     name = names[random.nextInt(names.length)];
     sprite = _generateRandomSprite(random);
   }

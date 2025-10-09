@@ -1,13 +1,13 @@
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/services.dart';
-import '../components/digimon_component.dart';
+import '../components/workout_buddy_component.dart';
 import '../components/lcd_display_component.dart';
 import '../components/button_panel_component.dart';
 import '../services/flame_sound_service.dart';
 
 class DigiviceGame extends FlameGame {
-  late DigimonComponent digimon;
+  late WorkoutBuddyComponent workoutBuddy;
   late LCDDisplayComponent lcdDisplay;
   late ButtonPanelComponent buttonPanel;
   late FlameSoundService soundService;
@@ -26,12 +26,12 @@ class DigiviceGame extends FlameGame {
     // Initialize sound service
     soundService = FlameSoundService();
     
-    // Create Digimon
-    digimon = DigimonComponent();
+    // Initialize WorkoutBuddy
+    workoutBuddy = WorkoutBuddyComponent();
     
     // Create LCD Display (takes up most of the screen)
     lcdDisplay = LCDDisplayComponent(
-      digimon: digimon,
+      workoutBuddy: workoutBuddy,
       menuItems: menuItems,
       currentMenuIndex: currentMenu,
       size: Vector2(size.x * 0.9, size.y * 0.7),
@@ -81,16 +81,16 @@ class DigiviceGame extends FlameGame {
       case 0: // Status - just show current stats
         break;
       case 1: // Feed
-        digimon.feed();
-        lcdDisplay.updateDigimon();
+        workoutBuddy.feed();
+        lcdDisplay.updateWorkoutBuddy();
         break;
       case 2: // Train
-        digimon.train();
-        lcdDisplay.updateDigimon();
+        workoutBuddy.train();
+        lcdDisplay.updateWorkoutBuddy();
         break;
       case 3: // Battle
-        digimon.battle();
-        lcdDisplay.updateDigimon();
+        workoutBuddy.battle();
+        lcdDisplay.updateWorkoutBuddy();
         break;
     }
   }

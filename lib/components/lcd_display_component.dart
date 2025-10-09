@@ -1,24 +1,24 @@
 import 'package:flame/components.dart';
 import 'package:flame/effects.dart';
 import 'package:flutter/material.dart';
-import 'digimon_component.dart';
+import 'workout_buddy_component.dart';
 import 'pixel_sprite_component.dart';
 
 class LCDDisplayComponent extends RectangleComponent {
-  final DigimonComponent digimon;
+  final WorkoutBuddyComponent workoutBuddy;
   final List<String> menuItems;
   int currentMenuIndex;
   
   late TextComponent menuText;
   late TextComponent digimonNameText;
   late TextComponent statsText;
-  late PixelSpriteComponent digimonSprite;
+  late PixelSpriteComponent workoutBuddySprite;
   late RectangleComponent menuBackground;
   late TextComponent prevMenuText;
   late TextComponent nextMenuText;
   
   LCDDisplayComponent({
-    required this.digimon,
+    required this.workoutBuddy,
     required this.menuItems,
     required this.currentMenuIndex,
     required Vector2 size,
@@ -159,13 +159,13 @@ class LCDDisplayComponent extends RectangleComponent {
   }
 
   Future<void> _createMainDisplay() async {
-    // Digimon sprite
-    digimonSprite = PixelSpriteComponent(
-      sprite: digimon.sprite,
+    // WorkoutBuddy sprite
+    workoutBuddySprite = PixelSpriteComponent(
+      sprite: workoutBuddy.sprite,
       spriteSize: 80,
       position: Vector2(size.x * 0.25, size.y * 0.4),
     );
-    add(digimonSprite);
+    add(workoutBuddySprite);
     
     // Stats display
     statsText = TextComponent(
@@ -182,9 +182,9 @@ class LCDDisplayComponent extends RectangleComponent {
     );
     add(statsText);
     
-    // Digimon name
+    // WorkoutBuddy name
     digimonNameText = TextComponent(
-      text: digimon.name,
+      text: workoutBuddy.name,
       textRenderer: TextPaint(
         style: const TextStyle(
           color: Colors.black,
@@ -205,7 +205,7 @@ class LCDDisplayComponent extends RectangleComponent {
     double iconY = size.y - 40;
     double iconX = size.x - 100;
     
-    if (digimon.isHungry) {
+    if (workoutBuddy.isHungry) {
       add(TextComponent(
         text: '🍴',
         textRenderer: TextPaint(
@@ -216,7 +216,7 @@ class LCDDisplayComponent extends RectangleComponent {
       iconX += 25;
     }
     
-    if (digimon.isHappy) {
+    if (workoutBuddy.isHappy) {
       add(TextComponent(
         text: '❤️',
         textRenderer: TextPaint(
@@ -227,7 +227,7 @@ class LCDDisplayComponent extends RectangleComponent {
       iconX += 25;
     }
     
-    if (digimon.isDead) {
+    if (workoutBuddy.isDead) {
       add(TextComponent(
         text: '✖️',
         textRenderer: TextPaint(
@@ -239,8 +239,8 @@ class LCDDisplayComponent extends RectangleComponent {
   }
 
   void _startSpriteAnimation() {
-    // Add floating animation to the Digimon sprite
-    digimonSprite.add(
+    // Add floating animation to the WorkoutBuddy sprite
+    workoutBuddySprite.add(
       MoveEffect.by(
         Vector2(0, -4),
         EffectController(
@@ -266,10 +266,10 @@ class LCDDisplayComponent extends RectangleComponent {
   
 
   String _getStatsText() {
-    return '''LV: ${digimon.level}
-HP: ${digimon.health}
-STR: ${digimon.strength}
-AGE: ${digimon.age}''';
+    return '''LV: ${workoutBuddy.level}
+HP: ${workoutBuddy.health}
+STR: ${workoutBuddy.strength}
+AGE: ${workoutBuddy.age}''';
   }
 
   void updateMenu(String newMenu, int newIndex) {
@@ -281,11 +281,11 @@ AGE: ${digimon.age}''';
     nextMenuText.text = _getNextMenu();
   }
 
-  void updateDigimon() {
-    // Update all Digimon-related displays
+  void updateWorkoutBuddy() {
+    // Update all WorkoutBuddy-related displays
     statsText.text = _getStatsText();
-    digimonNameText.text = digimon.name;
-    digimonSprite.updateSprite(digimon.sprite);
+    digimonNameText.text = workoutBuddy.name;
+    workoutBuddySprite.updateSprite(workoutBuddy.sprite);
     
     // Clear and recreate status indicators
     removeWhere((component) => component is TextComponent && 

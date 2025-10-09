@@ -1,6 +1,6 @@
 import 'dart:math';
 
-class Digimon {
+class WorkoutBuddy {
   String name;
   int level;
   int health;
@@ -11,7 +11,7 @@ class Digimon {
   int age;
   List<List<int>> sprite;
   
-  Digimon({
+  WorkoutBuddy({
     required this.name,
     this.level = 1,
     this.health = 100,
@@ -23,12 +23,12 @@ class Digimon {
     required this.sprite,
   });
 
-  static Digimon generateRandom() {
+  static WorkoutBuddy generateRandom() {
     final random = Random();
-    final names = ['Agumon', 'Gabumon', 'Patamon', 'Tentomon', 'Biyomon', 'Palmon'];
+    final names = ['Buddy', 'Sparky', 'Flash', 'Thunder', 'Blaze', 'Storm'];
     final name = names[random.nextInt(names.length)];
     
-    return Digimon(
+    return WorkoutBuddy(
       name: name,
       sprite: _generateRandomSprite(random),
     );
