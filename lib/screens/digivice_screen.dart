@@ -35,21 +35,28 @@ class _DigiviceScreenState extends State<DigiviceScreen>
   @override
   void dispose() {
     _animationController.dispose();
+    _soundService.dispose();
     super.dispose();
   }
 
   void _onButtonPressed(String button) {
-    _soundService.playBeep();
-    
+    print('🎮 Button pressed: $button');
     setState(() {
       switch (button) {
         case 'A':
+          print('🎮 Executing A button action');
+          _soundService.playBeep(); // Action sound
           _executeCurrentMenu();
           break;
         case 'B':
+          print('🎮 Executing B button action');
+          _soundService.playMenuSound(); // Menu navigation sound
           _currentMenu = (_currentMenu + 1) % _menuItems.length;
+          print('🎮 Menu changed to: ${_menuItems[_currentMenu]}');
           break;
         case 'C':
+          print('🎮 Executing C button action');
+          _soundService.playErrorSound(); // Cancel sound
           // Cancel/Back
           break;
       }
@@ -109,6 +116,8 @@ class _DigiviceScreenState extends State<DigiviceScreen>
                     digimon: _currentDigimon,
                     currentMenu: _menuItems[_currentMenu],
                     animationController: _animationController,
+                    menuItems: _menuItems,
+                    currentMenuIndex: _currentMenu,
                   ),
                 ),
               ),

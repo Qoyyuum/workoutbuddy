@@ -123,7 +123,7 @@ class Digimon {
       sprite = _generateRandomSprite(random);
       
       // Update name to show evolution
-      name = '${name}${level > 2 ? ' II' : ''}';
+      name = '$name${level > 2 ? ' II' : ''}';
     }
   }
 

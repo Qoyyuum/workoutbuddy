@@ -6,12 +6,16 @@ class LCDDisplay extends StatelessWidget {
   final Digimon digimon;
   final String currentMenu;
   final AnimationController animationController;
+  final List<String> menuItems;
+  final int currentMenuIndex;
 
   const LCDDisplay({
     super.key,
     required this.digimon,
     required this.currentMenu,
     required this.animationController,
+    required this.menuItems,
+    required this.currentMenuIndex,
   });
 
   @override
@@ -33,16 +37,8 @@ class LCDDisplay extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Menu indicator
-              Text(
-                '> $currentMenu',
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'monospace',
-                ),
-              ),
+              // Menu navigation display
+              _buildMenuNavigation(),
               const SizedBox(height: 8),
               
               // Main display area
@@ -94,19 +90,19 @@ class LCDDisplay extends StatelessWidget {
                     digimon.name,
                     style: const TextStyle(
                       color: Colors.black,
-                      fontSize: 10,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'monospace',
+                      fontFamily: 'Courier New',
                     ),
                   ),
                   Row(
                     children: [
                       if (digimon.isHungry) 
-                        const Icon(Icons.restaurant, size: 12, color: Colors.red),
+                        const Icon(Icons.restaurant, size: 16, color: Colors.red),
                       if (digimon.isHappy) 
-                        const Icon(Icons.favorite, size: 12, color: Colors.red),
+                        const Icon(Icons.favorite, size: 16, color: Colors.red),
                       if (digimon.isDead) 
-                        const Icon(Icons.close, size: 12, color: Colors.black),
+                        const Icon(Icons.close, size: 16, color: Colors.black),
                     ],
                   ),
                 ],
@@ -118,13 +114,83 @@ class LCDDisplay extends StatelessWidget {
     );
   }
 
+  Widget _buildMenuNavigation() {
+    String prevMenu = '';
+    String nextMenu = '';
+    
+    if (menuItems.isNotEmpty) {
+      int prevIndex = (currentMenuIndex - 1 + menuItems.length) % menuItems.length;
+      int nextIndex = (currentMenuIndex + 1) % menuItems.length;
+      prevMenu = menuItems[prevIndex];
+      nextMenu = menuItems[nextIndex];
+    }
+    
+    return Container(
+      height: 60,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Previous menu (left side, faded)
+          Expanded(
+            child: Text(
+              '< $prevMenu',
+              style: const TextStyle(
+                color: Color(0xFF5A6B5D),
+                fontSize: 12,
+                fontFamily: 'Courier New',
+              ),
+            ),
+          ),
+          
+          // Current menu (center, highlighted)
+          Expanded(
+            flex: 2,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF7A8B7D),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: Colors.black, width: 1),
+              ),
+              child: Center(
+                child: Text(
+                  currentMenu,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Courier New',
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
+          // Next menu (right side, faded)
+          Expanded(
+            child: Text(
+              '$nextMenu >',
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                color: Color(0xFF5A6B5D),
+                fontSize: 12,
+                fontFamily: 'Courier New',
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStatText(String text) {
     return Text(
       text,
       style: const TextStyle(
         color: Colors.black,
-        fontSize: 8,
-        fontFamily: 'monospace',
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+        fontFamily: 'Courier New',
       ),
     );
   }

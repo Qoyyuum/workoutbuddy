@@ -38,7 +38,7 @@ class DigiviceButtons extends StatelessWidget {
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 4,
                   offset: const Offset(2, 2),
                 ),
@@ -61,8 +61,9 @@ class DigiviceButtons extends StatelessWidget {
           description,
           style: const TextStyle(
             color: Colors.white70,
-            fontSize: 10,
-            fontFamily: 'monospace',
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Courier New',
           ),
         ),
       ],

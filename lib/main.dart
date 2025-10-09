@@ -15,7 +15,7 @@ class DigiviceApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.grey,
         scaffoldBackgroundColor: const Color(0xFF2C2C2C),
-        fontFamily: 'monospace',
+        fontFamily: 'Courier New',
       ),
       home: const DigiviceScreen(),
       debugShowCheckedModeBanner: false,
