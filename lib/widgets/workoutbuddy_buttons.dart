@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class DigiviceButtons extends StatelessWidget {
+class WorkoutbuddyButtons extends StatelessWidget {
   final Function(String) onButtonPressed;
 
-  const DigiviceButtons({
+  const WorkoutbuddyButtons({
     super.key,
     required this.onButtonPressed,
   });

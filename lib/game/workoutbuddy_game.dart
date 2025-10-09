@@ -6,7 +6,7 @@ import '../components/lcd_display_component.dart';
 import '../components/button_panel_component.dart';
 import '../services/flame_sound_service.dart';
 
-class DigiviceGame extends FlameGame {
+class WorkoutbuddyGame extends FlameGame {
   late WorkoutBuddyComponent workoutBuddy;
   late LCDDisplayComponent lcdDisplay;
   late ButtonPanelComponent buttonPanel;
@@ -21,7 +21,7 @@ class DigiviceGame extends FlameGame {
 
   @override
   Future<void> onLoad() async {
-    debugPrint('🎮 DigiviceGame: Loading...');
+    debugPrint('🎮 WorkoutbuddyGame: Loading...');
     
     // Initialize sound service
     soundService = FlameSoundService();
@@ -49,7 +49,7 @@ class DigiviceGame extends FlameGame {
     add(lcdDisplay);
     add(buttonPanel);
     
-    debugPrint('🎮 DigiviceGame: Loaded successfully');
+    debugPrint('🎮 WorkoutbuddyGame: Loaded successfully');
   }
 
   void _onButtonPressed(String button) {

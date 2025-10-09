@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
 import '../models/workout_buddy.dart';
 import '../widgets/lcd_display.dart';
-import '../widgets/digivice_buttons.dart';
+import '../widgets/workoutbuddy_buttons.dart';
 import '../services/sound_service.dart';
 import 'food_entry_screen.dart';
+import 'food_stats_screen.dart';
 
-class DigiviceScreen extends StatefulWidget {
-  const DigiviceScreen({super.key});
+class WorkoutbuddyScreen extends StatefulWidget {
+  const WorkoutbuddyScreen({super.key});
 
   @override
-  State<DigiviceScreen> createState() => _DigiviceScreenState();
+  State<WorkoutbuddyScreen> createState() => _WorkoutbuddyScreenState();
 }
 
-class _DigiviceScreenState extends State<DigiviceScreen>
+class _WorkoutbuddyScreenState extends State<WorkoutbuddyScreen>
     with TickerProviderStateMixin {
   late WorkoutBuddy _currentWorkoutBuddy;
   late AnimationController _animationController;
   late SoundService _soundService;
   
-  int _currentMenu = 0; // 0: Status, 1: Food, 2: Feed, 3: Train, 4: Battle
-  final List<String> _menuItems = ['STATUS', 'FOOD', 'FEED', 'TRAIN', 'BATTLE'];
+  int _currentMenu = 0; // 0: Status, 1: Food, 2: Train, 3: Battle
+  final List<String> _menuItems = ['STATUS', 'FOOD', 'TRAIN', 'BATTLE'];
 
   @override
   void initState() {
@@ -66,21 +67,28 @@ class _DigiviceScreenState extends State<DigiviceScreen>
 
   void _executeCurrentMenu() {
     switch (_currentMenu) {
-      case 0: // Status - just show current stats
+      case 0: // Status - show food diary stats
+        _openFoodStats();
         break;
       case 1: // Food - open food diary
         _openFoodDiary();
         break;
-      case 2: // Feed
-        _currentWorkoutBuddy.feed();
-        break;
-      case 3: // Train
+      case 2: // Train
         _currentWorkoutBuddy.train();
         break;
-      case 4: // Battle
+      case 3: // Battle
         _currentWorkoutBuddy.battle();
         break;
     }
+  }
+
+  Future<void> _openFoodStats() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const FoodStatsScreen(),
+      ),
+    );
   }
 
   Future<void> _openFoodDiary() async {
@@ -115,11 +123,11 @@ class _DigiviceScreenState extends State<DigiviceScreen>
         child: SafeArea(
           child: Column(
             children: [
-              // Digivice Header
+              // Workoutbuddy Header
               Container(
                 padding: const EdgeInsets.all(16),
                 child: const Text(
-                  'DIGIVICE',
+                  'WORKOUTBUDDY',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -147,7 +155,7 @@ class _DigiviceScreenState extends State<DigiviceScreen>
               // Control Buttons
               Expanded(
                 flex: 1,
-                child: DigiviceButtons(
+                child: WorkoutbuddyButtons(
                   onButtonPressed: _onButtonPressed,
                 ),
               ),

@@ -1,12 +1,12 @@
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
-import '../game/digivice_game.dart';
+import '../game/workoutbuddy_game.dart';
 
-class ButtonPanelComponent extends PositionComponent with HasGameReference<DigiviceGame> {
+class ButtonPanelComponent extends PositionComponent with HasGameReference<WorkoutbuddyGame> {
   final Function(String) onButtonPressed;
   
-  late List<DigiviceButton> buttons;
+  late List<WorkoutbuddyButton> buttons;
 
   ButtonPanelComponent({
     required Vector2 size,
@@ -23,21 +23,21 @@ class ButtonPanelComponent extends PositionComponent with HasGameReference<Digiv
     final buttonY = size.y * 0.1;
     
     buttons = [
-      DigiviceButton(
+      WorkoutbuddyButton(
         label: 'A',
         description: 'SELECT',
         size: Vector2(buttonWidth, buttonHeight),
         position: Vector2(10, buttonY),
         onPressed: () => onButtonPressed('A'),
       ),
-      DigiviceButton(
+      WorkoutbuddyButton(
         label: 'B',
         description: 'MENU',
         size: Vector2(buttonWidth, buttonHeight),
         position: Vector2(size.x / 3 + 10, buttonY),
         onPressed: () => onButtonPressed('B'),
       ),
-      DigiviceButton(
+      WorkoutbuddyButton(
         label: 'C',
         description: 'CANCEL',
         size: Vector2(buttonWidth, buttonHeight),
@@ -50,7 +50,7 @@ class ButtonPanelComponent extends PositionComponent with HasGameReference<Digiv
   }
 }
 
-class DigiviceButton extends RectangleComponent with TapCallbacks {
+class WorkoutbuddyButton extends RectangleComponent with TapCallbacks {
   final String label;
   final String description;
   final VoidCallback onPressed;
@@ -58,7 +58,7 @@ class DigiviceButton extends RectangleComponent with TapCallbacks {
   late TextComponent labelText;
   late TextComponent descriptionText;
 
-  DigiviceButton({
+  WorkoutbuddyButton({
     required this.label,
     required this.description,
     required Vector2 size,

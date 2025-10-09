@@ -10,7 +10,7 @@ class LCDDisplayComponent extends RectangleComponent {
   int currentMenuIndex;
   
   late TextComponent menuText;
-  late TextComponent digimonNameText;
+  late TextComponent buddyNameText;
   late TextComponent statsText;
   late PixelSpriteComponent workoutBuddySprite;
   late RectangleComponent menuBackground;
@@ -44,7 +44,7 @@ class LCDDisplayComponent extends RectangleComponent {
     // Create main display area
     await _createMainDisplay();
     
-    // Start floating animation for Digimon sprite
+    // Start floating animation for Buddy sprite
     _startSpriteAnimation();
   }
 
@@ -183,7 +183,7 @@ class LCDDisplayComponent extends RectangleComponent {
     add(statsText);
     
     // WorkoutBuddy name
-    digimonNameText = TextComponent(
+    buddyNameText = TextComponent(
       text: workoutBuddy.name,
       textRenderer: TextPaint(
         style: const TextStyle(
@@ -195,7 +195,7 @@ class LCDDisplayComponent extends RectangleComponent {
       ),
       position: Vector2(20, size.y - 40),
     );
-    add(digimonNameText);
+    add(buddyNameText);
     
     // Status indicators
     await _createStatusIndicators();
@@ -284,7 +284,7 @@ AGE: ${workoutBuddy.age}''';
   void updateWorkoutBuddy() {
     // Update all WorkoutBuddy-related displays
     statsText.text = _getStatsText();
-    digimonNameText.text = workoutBuddy.name;
+    buddyNameText.text = workoutBuddy.name;
     workoutBuddySprite.updateSprite(workoutBuddy.sprite);
     
     // Clear and recreate status indicators

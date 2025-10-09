@@ -1,4 +1,4 @@
-package com.example.digivice
+package com.example.workoutbuddy
 
 import io.flutter.embedding.android.FlutterActivity
 

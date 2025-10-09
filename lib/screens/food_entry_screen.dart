@@ -1,6 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/food_nutrition.dart';
+import '../models/food_diary_entry.dart';
 import '../services/fatsecret_service.dart';
+import '../services/mock_food_service.dart';
+import '../services/database_service.dart';
 import '../models/workout_buddy.dart';
 
 class FoodEntryScreen extends StatefulWidget {
@@ -19,7 +23,14 @@ class FoodEntryScreen extends StatefulWidget {
 
 class _FoodEntryScreenState extends State<FoodEntryScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final FatSecretService _fatSecretService = FatSecretService();
+  
+  // ⚙️ TOGGLE: Set to false to use real FatSecret API, true for mock data
+  static const bool _useMockData = false;
+  
+  // Food service - automatically switches based on _useMockData
+  late final dynamic _foodService = _useMockData 
+      ? MockFoodService() 
+      : FatSecretService();
   
   List<FoodSearchResult> _searchResults = [];
   FoodNutrition? _selectedFood;
@@ -43,7 +54,7 @@ class _FoodEntryScreenState extends State<FoodEntryScreen> {
     });
 
     try {
-      final results = await _fatSecretService.searchFood(_searchController.text.trim());
+      final results = await _foodService.searchFood(_searchController.text.trim());
       setState(() {
         _searchResults = results;
         _isLoading = false;
@@ -66,7 +77,7 @@ class _FoodEntryScreenState extends State<FoodEntryScreen> {
     });
 
     try {
-      final nutrition = await _fatSecretService.getFoodNutrition(food.foodId);
+      final nutrition = await _foodService.getFoodNutrition(food.foodId);
       setState(() {
         _selectedFood = nutrition;
         _isLoading = false;
@@ -79,8 +90,26 @@ class _FoodEntryScreenState extends State<FoodEntryScreen> {
     }
   }
 
-  void _feedDigimon() {
+  Future<void> _feedBuddy() async {
     if (_selectedFood == null) return;
+
+    // Save to database
+    final entry = FoodDiaryEntry(
+      foodName: _selectedFood!.foodName,
+      calories: _selectedFood!.calories,
+      protein: _selectedFood!.protein,
+      carbs: _selectedFood!.carbs,
+      fat: _selectedFood!.fat,
+      fiber: _selectedFood!.fiber,
+      servingSize: _selectedFood!.servingSize,
+      timestamp: DateTime.now(),
+    );
+
+    try {
+      await DatabaseService.instance.insertFoodEntry(entry);
+    } catch (e) {
+      debugPrint('❌ Error saving food entry: $e');
+    }
 
     final statChanges = _selectedFood!.calculateStatImpact();
     
@@ -127,6 +156,34 @@ class _FoodEntryScreenState extends State<FoodEntryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Data source indicator
+            if (_useMockData)
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.2),
+                  border: Border.all(color: Colors.orange, width: 1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.orange, size: 16),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Using MOCK data (toggle in code to use real API)',
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontSize: 12,
+                          fontFamily: 'Pixel Digivolve',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            
             // Search bar
             Container(
               decoration: BoxDecoration(
@@ -239,13 +296,13 @@ class _FoodEntryScreenState extends State<FoodEntryScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: _feedDigimon,
+                            onPressed: _feedBuddy,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF4A4A4A),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
                             child: const Text(
-                              'Feed to Digimon',
+                              'Feed to Buddy',
                               style: TextStyle(
                                 fontFamily: 'Pixel Digivolve',
                                 fontSize: 16,

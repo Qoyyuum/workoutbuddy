@@ -18,7 +18,7 @@ class SoundService {
   Future<void> playBeep() async {
     debugPrint('🔊 SoundService: playBeep() called');
     try {
-      await _audioPlayer.play(AssetSource('sounds/selectA.mp3'));
+      await _audioPlayer.play(AssetSource('audio/sounds/selectA.mp3'));
       debugPrint('🔊 SoundService: selectA.mp3 played successfully');
       // Also add haptic feedback
       HapticFeedback.lightImpact();
@@ -34,7 +34,7 @@ class SoundService {
   Future<void> playMenuSound() async {
     debugPrint('🔊 SoundService: playMenuSound() called');
     try {
-      await _audioPlayer.play(AssetSource('sounds/selectB.mp3'));
+      await _audioPlayer.play(AssetSource('audio/sounds/selectB.mp3'));
       debugPrint('🔊 SoundService: selectB.mp3 played successfully');
       // Also add haptic feedback
       HapticFeedback.selectionClick();
@@ -50,7 +50,7 @@ class SoundService {
   Future<void> playErrorSound() async {
     debugPrint('🔊 SoundService: playErrorSound() called');
     try {
-      await _audioPlayer.play(AssetSource('sounds/selectC.mp3'));
+      await _audioPlayer.play(AssetSource('audio/sounds/selectC.mp3'));
       debugPrint('🔊 SoundService: selectC.mp3 played successfully');
       // Also add haptic feedback
       HapticFeedback.heavyImpact();

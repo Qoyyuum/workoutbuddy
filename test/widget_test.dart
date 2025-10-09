@@ -7,14 +7,14 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:digivice/main.dart';
+import 'package:workoutbuddy/main.dart';
 
 void main() {
   testWidgets('Workout Buddy app smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const WorkoutBuddyApp());
 
-    // Verify that the Digivice title is displayed.
+    // Verify that the Workoutbuddy title is displayed.
     expect(find.text('Workout Buddy'), findsOneWidget);
   });
 }
