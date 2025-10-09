@@ -86,7 +86,7 @@ class WorkoutBuddyComponent extends Component {
     hunger = (hunger - 20).clamp(0, 100);
     happiness = (happiness + 10).clamp(0, 100);
     health = (health + 5).clamp(0, maxHealth);
-    print('🍖 ${name} was fed! Hunger: $hunger, Happiness: $happiness');
+    debugPrint('🍖 $name was fed! Hunger: $hunger, Happiness: $happiness');
   }
 
   void train() {
@@ -94,7 +94,7 @@ class WorkoutBuddyComponent extends Component {
     hunger = (hunger + 15).clamp(0, 100);
     happiness = (happiness + 5).clamp(0, 100);
     
-    print('💪 ${name} trained! Strength: $strength');
+    debugPrint('💪 $name trained! Strength: $strength');
     
     if (strength > level * 20) {
       evolve();
@@ -108,11 +108,11 @@ class WorkoutBuddyComponent extends Component {
     if (won) {
       strength += 5;
       happiness = (happiness + 15).clamp(0, 100);
-      print('⚔️ ${name} won the battle! Strength: $strength');
+      debugPrint('⚔️ $name won the battle! Strength: $strength');
     } else {
       health = (health - 10).clamp(0, maxHealth);
       happiness = (happiness - 5).clamp(0, 100);
-      print('💥 ${name} lost the battle. Health: $health');
+      debugPrint('💥 $name lost the battle. Health: $health');
     }
     
     hunger = (hunger + 10).clamp(0, 100);
@@ -130,9 +130,9 @@ class WorkoutBuddyComponent extends Component {
       sprite = _generateRandomSprite(random);
       
       // Update name to show evolution
-      name = '${name}${level > 2 ? ' II' : ''}';
+      name = '$name${level > 2 ? ' II' : ''}';
       
-      print('✨ ${name} evolved to level $level!');
+      debugPrint('✨ $name evolved to level $level!');
     }
   }
 

@@ -1,6 +1,6 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:crypto/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/food_nutrition.dart';
 
@@ -37,13 +37,13 @@ class FatSecretService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         _accessToken = data['access_token'];
-        print('✅ FatSecret authenticated successfully');
+        debugPrint('✅ FatSecret authenticated successfully');
       } else {
-        print('❌ FatSecret auth failed: ${response.statusCode} - ${response.body}');
+        debugPrint('❌ FatSecret auth failed: ${response.statusCode} - ${response.body}');
         throw Exception('Failed to authenticate with FatSecret');
       }
     } catch (e) {
-      print('❌ FatSecret auth error: $e');
+      debugPrint('❌ FatSecret auth error: $e');
       rethrow;
     }
   }
@@ -75,11 +75,11 @@ class FatSecretService {
         final foodList = foods is List ? foods : [foods];
         return foodList.map((f) => FoodSearchResult.fromJson(f)).toList();
       } else {
-        print('❌ Food search failed: ${response.statusCode} - ${response.body}');
+        debugPrint('❌ Food search failed: ${response.statusCode} - ${response.body}');
         return [];
       }
     } catch (e) {
-      print('❌ Food search error: $e');
+      debugPrint('❌ Food search error: $e');
       return [];
     }
   }
@@ -106,11 +106,11 @@ class FatSecretService {
         final data = jsonDecode(response.body);
         return FoodNutrition.fromJson(data['food']);
       } else {
-        print('❌ Get nutrition failed: ${response.statusCode} - ${response.body}');
+        debugPrint('❌ Get nutrition failed: ${response.statusCode} - ${response.body}');
         return null;
       }
     } catch (e) {
-      print('❌ Get nutrition error: $e');
+      debugPrint('❌ Get nutrition error: $e');
       return null;
     }
   }

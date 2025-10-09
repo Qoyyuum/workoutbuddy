@@ -1,8 +1,9 @@
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
+import '../game/digivice_game.dart';
 
-class ButtonPanelComponent extends PositionComponent with HasGameRef {
+class ButtonPanelComponent extends PositionComponent with HasGameReference<DigiviceGame> {
   final Function(String) onButtonPressed;
   
   late List<DigiviceButton> buttons;

@@ -143,7 +143,7 @@ class _FoodEntryScreenState extends State<FoodEntryScreen> {
                 decoration: InputDecoration(
                   hintText: 'Search food (e.g., "chicken breast")',
                   hintStyle: TextStyle(
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                     fontFamily: 'Pixel Digivolve',
                   ),
                   border: InputBorder.none,
@@ -281,7 +281,7 @@ class _FoodEntryScreenState extends State<FoodEntryScreen> {
                         subtitle: Text(
                           food.foodDescription,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.white.withValues(alpha: 0.7),
                             fontFamily: 'Pixel Digivolve',
                             fontSize: 10,
                           ),

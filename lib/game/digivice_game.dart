@@ -1,5 +1,5 @@
-import 'package:flame/components.dart';
 import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../components/workout_buddy_component.dart';
 import '../components/lcd_display_component.dart';
@@ -21,7 +21,7 @@ class DigiviceGame extends FlameGame {
 
   @override
   Future<void> onLoad() async {
-    print('🎮 DigiviceGame: Loading...');
+    debugPrint('🎮 DigiviceGame: Loading...');
     
     // Initialize sound service
     soundService = FlameSoundService();
@@ -49,27 +49,27 @@ class DigiviceGame extends FlameGame {
     add(lcdDisplay);
     add(buttonPanel);
     
-    print('🎮 DigiviceGame: Loaded successfully');
+    debugPrint('🎮 DigiviceGame: Loaded successfully');
   }
 
   void _onButtonPressed(String button) {
-    print('🎮 Button pressed: $button');
+    debugPrint('🎮 Button pressed: $button');
     
     switch (button) {
       case 'A':
-        print('🎮 Executing A button action');
+        debugPrint('🎮 Executing A button action');
         soundService.playBeep();
         _executeCurrentMenu();
         break;
       case 'B':
-        print('🎮 Executing B button action');
+        debugPrint('🎮 Executing B button action');
         soundService.playMenuSound();
         currentMenu = (currentMenu + 1) % menuItems.length;
         lcdDisplay.updateMenu(menuItems[currentMenu], currentMenu);
-        print('🎮 Menu changed to: ${menuItems[currentMenu]}');
+        debugPrint('🎮 Menu changed to: ${menuItems[currentMenu]}');
         break;
       case 'C':
-        print('🎮 Executing C button action');
+        debugPrint('🎮 Executing C button action');
         soundService.playErrorSound();
         // Cancel/Back action
         break;
