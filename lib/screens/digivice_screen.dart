@@ -3,6 +3,7 @@ import '../models/workout_buddy.dart';
 import '../widgets/lcd_display.dart';
 import '../widgets/digivice_buttons.dart';
 import '../services/sound_service.dart';
+import 'food_entry_screen.dart';
 
 class DigiviceScreen extends StatefulWidget {
   const DigiviceScreen({super.key});
@@ -17,8 +18,8 @@ class _DigiviceScreenState extends State<DigiviceScreen>
   late AnimationController _animationController;
   late SoundService _soundService;
   
-  int _currentMenu = 0; // 0: Status, 1: Feed, 2: Train, 3: Battle
-  final List<String> _menuItems = ['STATUS', 'FEED', 'TRAIN', 'BATTLE'];
+  int _currentMenu = 0; // 0: Status, 1: Food, 2: Feed, 3: Train, 4: Battle
+  final List<String> _menuItems = ['STATUS', 'FOOD', 'FEED', 'TRAIN', 'BATTLE'];
 
   @override
   void initState() {
@@ -67,16 +68,37 @@ class _DigiviceScreenState extends State<DigiviceScreen>
     switch (_currentMenu) {
       case 0: // Status - just show current stats
         break;
-      case 1: // Feed
+      case 1: // Food - open food diary
+        _openFoodDiary();
+        break;
+      case 2: // Feed
         _currentWorkoutBuddy.feed();
         break;
-      case 2: // Train
+      case 3: // Train
         _currentWorkoutBuddy.train();
         break;
-      case 3: // Battle
+      case 4: // Battle
         _currentWorkoutBuddy.battle();
         break;
     }
+  }
+
+  Future<void> _openFoodDiary() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FoodEntryScreen(
+          workoutBuddy: _currentWorkoutBuddy,
+          onStatUpdate: (statChanges) {
+            setState(() {
+              _currentWorkoutBuddy.health = (_currentWorkoutBuddy.health + (statChanges['health'] ?? 0)).clamp(0, _currentWorkoutBuddy.maxHealth).toInt();
+              _currentWorkoutBuddy.strength += statChanges['strength'] ?? 0;
+              _currentWorkoutBuddy.happiness = (_currentWorkoutBuddy.happiness + (statChanges['happiness'] ?? 0)).clamp(0, 100).toInt();
+            });
+          },
+        ),
+      ),
+    );
   }
 
   @override

@@ -10,11 +10,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:digivice/main.dart';
 
 void main() {
-  testWidgets('Digivice app smoke test', (WidgetTester tester) async {
+  testWidgets('Workout Buddy app smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const DigiviceApp());
+    await tester.pumpWidget(const WorkoutBuddyApp());
 
     // Verify that the Digivice title is displayed.
-    expect(find.text('DIGIVICE'), findsOneWidget);
+    expect(find.text('Workout Buddy'), findsOneWidget);
   });
 }

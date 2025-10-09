@@ -50,6 +50,7 @@ class FatSecretService {
 
   // Search for food by name
   Future<List<FoodSearchResult>> searchFood(String query) async {
+    debugPrint('🔍 Searching for food: "$query"');
     await _authenticate();
 
     try {
@@ -59,6 +60,8 @@ class FatSecretService {
         'format': 'json',
       });
 
+      debugPrint('🔍 Request URL: $uri');
+      
       final response = await http.get(
         uri,
         headers: {
@@ -66,20 +69,30 @@ class FatSecretService {
         },
       );
 
+      debugPrint('🔍 Response status: ${response.statusCode}');
+      debugPrint('🔍 Response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final foods = data['foods']?['food'];
         
-        if (foods == null) return [];
+        debugPrint('🔍 Parsed foods data: $foods');
+        
+        if (foods == null) {
+          debugPrint('⚠️ No foods found in response');
+          return [];
+        }
         
         final foodList = foods is List ? foods : [foods];
+        debugPrint('✅ Found ${foodList.length} foods');
         return foodList.map((f) => FoodSearchResult.fromJson(f)).toList();
       } else {
         debugPrint('❌ Food search failed: ${response.statusCode} - ${response.body}');
         return [];
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('❌ Food search error: $e');
+      debugPrint('❌ Stack trace: $stackTrace');
       return [];
     }
   }
