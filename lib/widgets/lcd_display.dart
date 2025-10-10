@@ -70,7 +70,12 @@ class LCDDisplay extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildStatText('LV: ${workoutBuddy.level} | HP: ${workoutBuddy.health} | STR: ${workoutBuddy.strength} | AGE: ${workoutBuddy.age}'),
+                          _buildStatText('LV: ${workoutBuddy.level}'),
+                          _buildStatText('HP: ${workoutBuddy.health}/${workoutBuddy.maxHealth}'),
+                          _buildStatText('💪 ${workoutBuddy.strength}'),
+                          _buildStatText('⚡ ${workoutBuddy.agility}'),
+                          _buildStatText('🏃 ${workoutBuddy.endurance}'),
+                          _buildStatText('AGE: ${workoutBuddy.age}'),
                         ],
                       ),
                     ),
