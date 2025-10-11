@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/workout_buddy.dart';
-import '../models/workout_type.dart';
 import '../widgets/lcd_display.dart';
 import '../widgets/workoutbuddy_buttons.dart';
 import '../services/sound_service.dart';
@@ -146,7 +145,7 @@ class _WorkoutbuddyScreenState extends State<WorkoutbuddyScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 child: const Text(
-                  'WORKOUTBUDDY',
+                  'WORKOUT BUDDY',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,

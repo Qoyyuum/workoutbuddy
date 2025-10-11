@@ -37,7 +37,7 @@ class _WorkoutScreenState extends State<WorkoutScreen>
   StreamSubscription<WorkoutSession>? _workoutSubscription;
   
   // For stat gain animations
-  List<StatGainWidget> _activeStatGains = [];
+  final List<StatGainWidget> _activeStatGains = [];
 
   @override
   void initState() {
@@ -112,12 +112,12 @@ class _WorkoutScreenState extends State<WorkoutScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Workout Complete! 🎉'),
+        title: const Text('Workout Complete! 🎉'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${session.type.displayName}'),
+            Text(session.type.displayName),
             Text('Reps: ${session.reps}'),
             Text('Duration: ${session.duration.inMinutes}m ${session.duration.inSeconds % 60}s'),
             const SizedBox(height: 16),
@@ -233,7 +233,7 @@ class _WorkoutScreenState extends State<WorkoutScreen>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),

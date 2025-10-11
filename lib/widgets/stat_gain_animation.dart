@@ -91,7 +91,7 @@ class _StatGainWidgetState extends State<StatGainWidget> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: _getStatColor().withOpacity(0.4),
+                      color: _getStatColor().withValues(alpha: 0.4),
                       blurRadius: 8,
                       spreadRadius: 2,
                     ),

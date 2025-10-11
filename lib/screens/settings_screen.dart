@@ -321,7 +321,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       value: _useCustomCalories,
                       onChanged: (value) => setState(() => _useCustomCalories = value),
-                      activeColor: const Color(0xFF9CB4A8),
+                      activeTrackColor: const Color(0xFF9CB4A8),
+                      activeThumbColor: const Color(0xFF9CB4A8),
                       contentPadding: EdgeInsets.zero,
                     ),
                     
@@ -497,7 +498,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String Function(T) getLabel,
   }) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       items: items.map((item) {
         return DropdownMenuItem(
           value: item,
