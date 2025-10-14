@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_health_connect/flutter_health_connect.dart';
 import '../models/workout_type.dart';
 import '../models/workout_session.dart';
 
@@ -14,6 +15,7 @@ class WorkoutDetectionService {
   WorkoutType? _currentWorkoutType;
   DateTime? _workoutStartTime;
   int _currentReps = 0;
+  bool _isHealthConnectInitialized = false;
 
   Stream<WorkoutSession> get workoutStream => _workoutController?.stream ?? const Stream.empty();
 
@@ -67,9 +69,139 @@ class WorkoutDetectionService {
 
   /// Android-specific workout detection using Health Connect
   Future<void> _startAndroidDetection(WorkoutType workoutType) async {
-    // TODO: Implement Health Connect integration
-    // For now, simulate detection with timer
-    _simulateWorkoutDetection(workoutType);
+    try {
+      // Initialize Health Connect if not already done
+      if (!_isHealthConnectInitialized) {
+        final isAvailable = await HealthConnectFactory.isAvailable();
+        if (!isAvailable) {
+          if (kDebugMode) {
+            print('⚠️ Health Connect not available, falling back to simulation');
+          }
+          _simulateWorkoutDetection(workoutType);
+          return;
+        }
+        _isHealthConnectInitialized = true;
+      }
+
+      // Request permissions for workout data types
+      final dataTypes = _getHealthConnectDataTypes(workoutType);
+      final permissionsGranted = await HealthConnectFactory.requestPermissions(
+        dataTypes,
+        readOnly: true,
+      );
+      
+      if (!permissionsGranted) {
+        if (kDebugMode) {
+          print('⚠️ Health Connect permissions denied, falling back to simulation');
+        }
+        _simulateWorkoutDetection(workoutType);
+        return;
+      }
+
+      if (kDebugMode) {
+        print('✅ Health Connect initialized and permissions granted');
+      }
+
+      // Start monitoring for exercise data
+      await _monitorHealthConnectData(workoutType, dataTypes);
+      
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error initializing Health Connect: $e');
+        print('Falling back to simulation mode');
+      }
+      _simulateWorkoutDetection(workoutType);
+    }
+  }
+
+  /// Monitor Health Connect for workout data updates
+  Future<void> _monitorHealthConnectData(
+    WorkoutType workoutType,
+    List<HealthConnectDataType> dataTypes,
+  ) async {
+    // Poll for new exercise data periodically
+    _workoutTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      try {
+        final endTime = DateTime.now();
+        final startTime = _workoutStartTime ?? endTime.subtract(const Duration(seconds: 30));
+
+        // Process the records based on workout type
+        if (_isRepBasedExercise(workoutType)) {
+          // For rep-based exercises, check for steps as a proxy
+          try {
+            final stepsData = await HealthConnectFactory.getRecord(
+              type: HealthConnectDataType.Steps,
+              startTime: startTime,
+              endTime: endTime,
+            );
+            
+            final records = stepsData['data'] as List?;
+            if (records != null && records.isNotEmpty) {
+              // Sum up steps from the workout period as a proxy for reps
+              int totalSteps = 0;
+              for (var record in records) {
+                totalSteps += (record['count'] as num?)?.toInt() ?? 0;
+              }
+              // Scale down steps to reasonable rep count (rough estimate)
+              _currentReps = (totalSteps / 10).round();
+              
+              if (kDebugMode) {
+                print('🔄 Health Connect detected $_currentReps reps for ${workoutType.displayName}');
+              }
+            }
+          } catch (e) {
+            if (kDebugMode) {
+              print('⚠️ Could not read steps data: $e');
+            }
+          }
+        } else {
+          // For time-based exercises, track duration via heart rate or exercise session
+          try {
+            final sessionData = await HealthConnectFactory.getRecord(
+              type: HealthConnectDataType.ExerciseSession,
+              startTime: startTime,
+              endTime: endTime,
+            );
+            
+            final sessions = sessionData['data'] as List?;
+            if (sessions != null && sessions.isNotEmpty) {
+              final duration = DateTime.now().difference(_workoutStartTime!);
+              if (kDebugMode) {
+                print('⏱️ Health Connect tracking ${workoutType.displayName}: ${duration.inSeconds}s');
+              }
+            }
+          } catch (e) {
+            if (kDebugMode) {
+              print('⚠️ Could not read exercise session data: $e');
+            }
+          }
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('❌ Error reading Health Connect data: $e');
+        }
+      }
+    });
+  }
+
+  /// Get relevant Health Connect data types for a workout
+  List<HealthConnectDataType> _getHealthConnectDataTypes(WorkoutType workoutType) {
+    // Common data types for all workouts
+    final dataTypes = <HealthConnectDataType>[
+      HealthConnectDataType.ExerciseSession,
+      HealthConnectDataType.HeartRate,
+    ];
+
+    // Add specific data types based on workout
+    if (_isRepBasedExercise(workoutType)) {
+      dataTypes.add(HealthConnectDataType.Steps);
+    } else {
+      // Time-based exercises
+      dataTypes.add(HealthConnectDataType.Distance);
+      dataTypes.add(HealthConnectDataType.Speed);
+    }
+
+    return dataTypes;
   }
 
   /// iOS-specific workout detection using HealthKit
