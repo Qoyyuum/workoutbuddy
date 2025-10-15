@@ -396,7 +396,7 @@ class WorkoutDetectionService {
 
   /// Manual detection for web/desktop platforms
   Future<void> _startManualDetection(WorkoutType workoutType) async {
-    // For manual mode, we'll provide a UI for users to log reps
+    // Manual mode currently uses simulation; users can call addRep() to manually log reps
     _simulateWorkoutDetection(workoutType);
   }
 
