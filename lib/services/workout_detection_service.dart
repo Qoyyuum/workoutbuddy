@@ -21,15 +21,22 @@ class WorkoutDetectionService {
 
   /// Start detecting a specific workout type
   Future<void> startWorkoutDetection(WorkoutType workoutType) async {
-    // Cancel any existing timer to prevent overlapping timers
-    _workoutTimer?.cancel();
-    _workoutTimer = null;
-    _isPolling = false;
+    // If a workout is already active, stop it first to preserve session data
+    if (_currentWorkoutType != null && _workoutStartTime != null) {
+      if (kDebugMode) {
+        print('⚠️ Stopping active workout before starting new one');
+      }
+      final previousSession = stopWorkoutDetection();
+      if (previousSession != null && kDebugMode) {
+        print('💾 Saved previous session: ${previousSession.type.displayName} - ${previousSession.reps} reps');
+      }
+    }
     
     // Initialize workout state
     _currentWorkoutType = workoutType;
     _workoutStartTime = DateTime.now();
     _currentReps = 0;
+    _isPolling = false;
     
     _workoutController ??= StreamController<WorkoutSession>.broadcast();
     
