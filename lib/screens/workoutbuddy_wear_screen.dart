@@ -146,14 +146,17 @@ class _WorkoutbuddyWearScreenState extends State<WorkoutbuddyWearScreen>
       onHorizontalDragEnd: (details) {
         if (_currentPage != 0) return; // Disabled on stats page
         
-        if (details.primaryVelocity! > 0) {
+        final velocity = details.primaryVelocity;
+        if (velocity == null) return; // Exit early if velocity is null
+        
+        if (velocity > 0) {
           // Swipe right - previous menu
           setState(() {
             _currentMenu = (_currentMenu - 1) % _menuItems.length;
             if (_currentMenu < 0) _currentMenu = _menuItems.length - 1;
             _soundService.playMenuSound();
           });
-        } else if (details.primaryVelocity! < 0) {
+        } else if (velocity < 0) {
           // Swipe left - next menu
           setState(() {
             _currentMenu = (_currentMenu + 1) % _menuItems.length;
@@ -234,7 +237,6 @@ class _WorkoutbuddyWearScreenState extends State<WorkoutbuddyWearScreen>
                         setState(() {
                           _currentMenu = (_currentMenu - 1) % _menuItems.length;
                           if (_currentMenu < 0) _currentMenu = _menuItems.length - 1;
-                          _soundService.playMenuSound();
                         });
                       },
                       child: Container(
@@ -384,13 +386,13 @@ class _WorkoutbuddyWearScreenState extends State<WorkoutbuddyWearScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.arrow_downward,
+                    Icons.arrow_upward,
                     color: Colors.white.withValues(alpha: 0.3),
                     size: 10,
                   ),
                   const SizedBox(width: 3),
                   Text(
-                    'Menu',
+                    'Stats',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.3),
                       fontSize: size.width * 0.03,

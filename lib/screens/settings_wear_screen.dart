@@ -63,6 +63,7 @@ class _SettingsWearScreenState extends State<SettingsWearScreen> {
       debugPrint('Error loading profile: $e');
     }
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
   }
 
@@ -103,6 +104,7 @@ class _SettingsWearScreenState extends State<SettingsWearScreen> {
       }
     }
 
+    if (!mounted) return;
     setState(() => _isSaving = false);
   }
 

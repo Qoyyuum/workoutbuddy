@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import '../models/food_nutrition.dart';
+import 'food_service.dart';
 
 /// Mock food service for testing without FatSecret API
-class MockFoodService {
+class MockFoodService implements FoodService {
   // Mock food database
   static final List<Map<String, dynamic>> _mockFoods = [
     {
@@ -172,6 +173,7 @@ class MockFoodService {
     },
   ];
 
+  @override
   Future<List<FoodSearchResult>> searchFood(String query) async {
     debugPrint('🔍 [MOCK] Searching for food: "$query"');
     
@@ -193,6 +195,7 @@ class MockFoodService {
     return results;
   }
 
+  @override
   Future<FoodNutrition?> getFoodNutrition(String foodId) async {
     debugPrint('🔍 [MOCK] Getting nutrition for food ID: $foodId');
     

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import '../models/workout_buddy.dart';
 import '../models/food_nutrition.dart';
 import '../models/food_diary_entry.dart';
+import '../services/database_service.dart';
+import '../services/food_service.dart';
 import '../services/fatsecret_service.dart';
 import '../services/mock_food_service.dart';
-import '../services/database_service.dart';
-import '../models/workout_buddy.dart';
 
 /// Wear OS optimized food entry screen
 /// - Page 1: Search screen
@@ -28,7 +29,7 @@ class _FoodEntryWearScreenState extends State<FoodEntryWearScreen> {
   final PageController _pageController = PageController();
   
   static const bool _useMockData = false;
-  late final dynamic _foodService = _useMockData 
+  late final FoodService _foodService = _useMockData 
       ? MockFoodService() 
       : FatSecretService();
   

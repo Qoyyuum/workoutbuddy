@@ -74,7 +74,9 @@ class _FoodStatsScreenState extends State<FoodStatsScreen> {
   Widget build(BuildContext context) {
     final totalCalories = _todaysMacros['calories'] ?? 0.0;
     final caloriesRemaining = _calorieGoal - totalCalories;
-    final progressPercent = (totalCalories / _calorieGoal).clamp(0.0, 1.0);
+    final progressPercent = _calorieGoal <= 0 
+        ? 0.0 
+        : (totalCalories / _calorieGoal).clamp(0.0, 1.0).toDouble();
 
     return Scaffold(
       backgroundColor: const Color(0xFF2C2C2C),

@@ -222,83 +222,81 @@ class _WorkoutWearScreenState extends State<WorkoutWearScreen>
   }
 
   Widget _buildActiveWorkout(Size size) {
-    return SafeArea(
-      child: Column(
-        children: [
-          // Header with close button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Icon(
-                    Icons.close,
-                    color: Colors.blue[900],
-                    size: 18,
-                  ),
+    return Column(
+      children: [
+        // Header with close button
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Icon(
+                  Icons.close,
+                  color: Colors.blue[900],
+                  size: 18,
                 ),
-                Expanded(
-                  child: Text(
-                    _selectedWorkout?.displayName.toUpperCase() ?? '',
-                    style: TextStyle(
-                      color: Colors.blue[900],
-                      fontSize: size.width * 0.06,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 22),
-              ],
-            ),
-          ),
-          
-          const Spacer(),
-          
-          // Stats (large)
-          _buildStatColumn('REPS', _currentReps.toString(), Colors.blue, size),
-          SizedBox(height: size.height * 0.03),
-          _buildStatColumn(
-            'TIME',
-            '${_workoutDuration.inMinutes}:${(_workoutDuration.inSeconds % 60).toString().padLeft(2, '0')}',
-            Colors.green,
-            size,
-          ),
-          
-          const Spacer(),
-          
-          // Stop button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: GestureDetector(
-              onTap: _stopWorkout,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.red[600],
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.red[900]!, width: 2),
-                ),
+              ),
+              Expanded(
                 child: Text(
-                  'STOP',
+                  _selectedWorkout?.displayName.toUpperCase() ?? '',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: size.width * 0.05,
+                    color: Colors.blue[900],
+                    fontSize: size.width * 0.06,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
+                    letterSpacing: 0.5,
                   ),
                   textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
+              ),
+              const SizedBox(width: 22),
+            ],
+          ),
+        ),
+        
+        const Spacer(),
+        
+        // Stats (large)
+        _buildStatColumn('REPS', _currentReps.toString(), Colors.blue, size),
+        SizedBox(height: size.height * 0.03),
+        _buildStatColumn(
+          'TIME',
+          '${_workoutDuration.inMinutes}:${(_workoutDuration.inSeconds % 60).toString().padLeft(2, '0')}',
+          Colors.green,
+          size,
+        ),
+        
+        const Spacer(),
+        
+        // Stop button
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: GestureDetector(
+            onTap: _stopWorkout,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.red[600],
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.red[900]!, width: 2),
+              ),
+              child: Text(
+                'STOP',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: size.width * 0.05,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+                textAlign: TextAlign.center,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

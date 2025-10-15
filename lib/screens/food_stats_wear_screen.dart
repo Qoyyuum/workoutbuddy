@@ -52,12 +52,14 @@ class _FoodStatsWearScreenState extends State<FoodStatsWearScreen> {
         goal = profile.getCalorieGoal();
       }
 
+      if (!mounted) return;
       setState(() {
         _todaysMacros = macros;
         _calorieGoal = goal;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }
@@ -67,7 +69,10 @@ class _FoodStatsWearScreenState extends State<FoodStatsWearScreen> {
     final size = MediaQuery.of(context).size;
     final totalCalories = _todaysMacros['calories'] ?? 0.0;
     final caloriesRemaining = _calorieGoal - totalCalories;
-    final progressPercent = (totalCalories / _calorieGoal).clamp(0.0, 1.0);
+    final isOver = totalCalories > _calorieGoal;
+    final progressPercent = _calorieGoal <= 0 
+        ? 0.0 
+        : (totalCalories / _calorieGoal).clamp(0.0, 1.0).toDouble();
 
     return Scaffold(
       backgroundColor: const Color(0xFF2C2C2C),
@@ -170,7 +175,7 @@ class _FoodStatsWearScreenState extends State<FoodStatsWearScreen> {
                                     minHeight: 6,
                                     backgroundColor: Colors.grey[800],
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                      progressPercent > 1.0
+                                      isOver
                                           ? Colors.red
                                           : const Color(0xFF9CB4A8),
                                     ),
@@ -178,11 +183,11 @@ class _FoodStatsWearScreenState extends State<FoodStatsWearScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  caloriesRemaining > 0
+                                  !isOver
                                       ? '${caloriesRemaining.toStringAsFixed(0)} left'
                                       : '${(-caloriesRemaining).toStringAsFixed(0)} over',
                                   style: TextStyle(
-                                    color: caloriesRemaining > 0
+                                    color: !isOver
                                         ? Colors.green
                                         : Colors.red,
                                     fontSize: size.width * 0.035,

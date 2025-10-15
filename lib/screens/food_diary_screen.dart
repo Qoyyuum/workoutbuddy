@@ -55,16 +55,9 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
         _userProfile = UserProfile.fromMap(profileData);
       }
       
-      // Load food entries for selected period using calendar-day boundaries
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      
-      // End of today (23:59:59.999)
-      final endDate = today.add(const Duration(days: 1)).subtract(const Duration(milliseconds: 1));
-      
-      // Start of earliest day in range
-      final startDate = today.subtract(Duration(days: _selectedDays - 1));
-      
+      // Load food entries for selected period
+      final endDate = DateTime.now();
+      final startDate = endDate.subtract(Duration(days: _selectedDays));
       _entries = await _db.getFoodEntriesByDateRange(startDate, endDate);
       
     } catch (e) {
@@ -240,7 +233,9 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: LinearProgressIndicator(
-                  value: (totals['calories']! / calorieGoal).clamp(0.0, 1.0),
+                  value: calorieGoal <= 0 
+                      ? 0.0 
+                      : (totals['calories']! / calorieGoal).clamp(0.0, 1.0).toDouble(),
                   minHeight: 8,
                   backgroundColor: Colors.grey[200],
                   valueColor: AlwaysStoppedAnimation<Color>(status['color']),
