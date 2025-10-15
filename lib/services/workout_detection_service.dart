@@ -48,7 +48,8 @@ class WorkoutDetectionService {
     _currentReps = 0;
     _isPolling = false;
     
-    // Reset circuit breaker for new workout
+    // Reset circuit breaker for new workout (provides recovery opportunity)
+    // This allows Health Connect to be retried after temporary failures
     _healthConnectFailureCount = 0;
     _healthConnectCircuitOpen = false;
     
@@ -157,6 +158,13 @@ class WorkoutDetectionService {
   }
 
   /// Monitor Health Connect for workout data updates
+  /// 
+  /// TODO: Consider using Health Connect change tokens for more efficient polling
+  /// Instead of querying the entire workout window on each poll, use:
+  /// - getChangesToken(dataTypes) at workout start
+  /// - getChanges(token) in each poll to get only incremental changes
+  /// - Update token after each successful poll
+  /// This would reduce API load and improve efficiency for longer workouts
   Future<void> _monitorHealthConnectData(
     WorkoutType workoutType,
     List<HealthConnectDataType> dataTypes,
@@ -172,12 +180,16 @@ class WorkoutDetectionService {
           print('🔌 Circuit breaker open - Health Connect polling disabled');
           print('   Falling back to simulation mode');
         }
+        // Clean transition: cancel this timer before starting simulation timer
         timer.cancel();
         _simulateWorkoutDetection(workoutType);
+        // Note: Circuit breaker will reset on next workout via startWorkoutDetection
         return;
       }
       
       _isPolling = true;
+      // successfulPoll tracks whether we got valid data this cycle
+      // Only set to true when actual workout data is retrieved and processed
       bool successfulPoll = false;
       try {
         final endTime = DateTime.now();
@@ -243,6 +255,7 @@ class WorkoutDetectionService {
                   if (estimatedReps > 0 && estimatedReps < 1000) {
                     _currentReps = estimatedReps;
                     _emitCurrentState();
+                    // Mark as successful - we got valid data from Health Connect
                     successfulPoll = true;
                     
                     if (kDebugMode) {
@@ -276,6 +289,7 @@ class WorkoutDetectionService {
             if (sessions != null && sessions.isNotEmpty) {
               final duration = DateTime.now().difference(_workoutStartTime!);
               _emitCurrentState();
+              // Mark as successful - we got valid session data from Health Connect
               successfulPoll = true;
               if (kDebugMode) {
                 print('⏱️ Health Connect tracking ${workoutType.displayName}: ${duration.inSeconds}s');
@@ -288,7 +302,8 @@ class WorkoutDetectionService {
           }
         }
         
-        // Reset failure count on successful poll
+        // Reset failure count on successful poll (prevents circuit breaker from opening)
+        // successfulPoll is only true if we retrieved and processed valid Health Connect data
         if (successfulPoll) {
           _healthConnectFailureCount = 0;
         }
