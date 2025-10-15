@@ -34,11 +34,11 @@ class WorkoutDetectionService {
     // If a workout is already active, stop it first to preserve session data
     if (_currentWorkoutType != null && _workoutStartTime != null) {
       if (kDebugMode) {
-        print('⚠️ Stopping active workout before starting new one');
+        debugPrint('⚠️ Stopping active workout before starting new one');
       }
       final previousSession = stopWorkoutDetection();
       if (previousSession != null && kDebugMode) {
-        print('💾 Saved previous session: ${previousSession.type.displayName} - ${previousSession.reps} reps');
+        debugPrint('💾 Saved previous session: ${previousSession.type.displayName} - ${previousSession.reps} reps');
       }
     }
     
