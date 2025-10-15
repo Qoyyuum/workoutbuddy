@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_health_connect/flutter_health_connect.dart';
 import '../models/workout_type.dart';
@@ -34,12 +33,15 @@ class WorkoutDetectionService {
     }
 
     // For now, we'll use platform-specific detection methods
-    if (Platform.isAndroid) {
+    if (kIsWeb) {
+      // Web - manual input mode
+      await _startManualDetection(workoutType);
+    } else if (defaultTargetPlatform == TargetPlatform.android) {
       await _startAndroidDetection(workoutType);
-    } else if (Platform.isIOS) {
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       await _startIOSDetection(workoutType);
     } else {
-      // Web/Desktop - manual input mode
+      // Desktop - manual input mode
       await _startManualDetection(workoutType);
     }
   }
@@ -124,11 +126,11 @@ class WorkoutDetectionService {
     List<HealthConnectDataType> dataTypes,
   ) async {
     // Poll for new exercise data periodically
+    _workoutTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
       // Reentrancy guard: prevent overlapping polls
       if (_isPolling) return;
       
       _isPolling = true;
-    _workoutTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
       try {
         final endTime = DateTime.now();
         final startTime = _workoutStartTime ?? endTime.subtract(const Duration(seconds: 30));
@@ -151,8 +153,8 @@ class WorkoutDetectionService {
                 totalSteps += (record['count'] as num?)?.toInt() ?? 0;
               }
               // Scale down steps to reasonable rep count (rough estimate)
-              _emitCurrentState();
               _currentReps = (totalSteps / 10).round();
+              _emitCurrentState();
               
               if (kDebugMode) {
                 print('🔄 Health Connect detected $_currentReps reps for ${workoutType.displayName}');
@@ -185,16 +187,16 @@ class WorkoutDetectionService {
               print('⚠️ Could not read exercise session data: $e');
             }
           }
+        }
         
         // Emit final state update at end of polling cycle
         _emitCurrentState();
-        }
       } catch (e) {
         if (kDebugMode) {
           print('❌ Error reading Health Connect data: $e');
+        }
       } finally {
         _isPolling = false;
-        }
       }
     });
   }
@@ -237,16 +239,16 @@ class WorkoutDetectionService {
     // Simulate rep detection every 2-5 seconds for rep-based exercises
     if (_isRepBasedExercise(workoutType)) {
       _workoutTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-        _emitCurrentState();
         _currentReps++;
+        _emitCurrentState();
         if (kDebugMode) {
           print('🔄 Detected rep #$_currentReps for ${workoutType.displayName}');
         }
       });
     } else {
       // For time-based exercises, just track duration
-        _emitCurrentState();
       _workoutTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+        _emitCurrentState();
         if (kDebugMode) {
           final elapsed = DateTime.now().difference(_workoutStartTime!);
           print('⏱️ ${workoutType.displayName} duration: ${elapsed.inSeconds}s');
@@ -271,8 +273,8 @@ class WorkoutDetectionService {
   /// Manually add a rep (for manual input mode)
   void addRep() {
     if (_currentWorkoutType != null) {
-      _emitCurrentState();
       _currentReps++;
+      _emitCurrentState();
       if (kDebugMode) {
         print('➕ Manual rep added: $_currentReps');
       }
@@ -317,8 +319,8 @@ class WorkoutDetectionService {
   }
 
   void dispose() {
-    _workoutTimer?.cancel();;
-    _isPolling = false
+    _workoutTimer?.cancel();
+    _isPolling = false;
     _workoutController?.close();
   }
 }
