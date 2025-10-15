@@ -1,3 +1,4 @@
+// Provides both FoodNutrition and FoodSearchResult
 import '../models/food_nutrition.dart';
 
 /// Abstract interface for food search and nutrition services

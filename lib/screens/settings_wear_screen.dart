@@ -46,7 +46,7 @@ class _SettingsWearScreenState extends State<SettingsWearScreen> {
       
       for (final key in keys) {
         final value = await db.getSetting(key);
-        if (value != null) {
+        if (value != null && value.isNotEmpty) {
           profileData[key] = value;
         }
       }
@@ -79,7 +79,7 @@ class _SettingsWearScreenState extends State<SettingsWearScreen> {
           await db.saveSetting('custom_calorie_goal', customGoal.toString());
         }
       } else {
-        // Clear custom calorie goal by saving empty string
+        // Clear custom calorie goal by saving empty string (filtered on load)
         await db.saveSetting('custom_calorie_goal', '');
       }
 

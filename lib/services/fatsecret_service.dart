@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+// Provides both FoodNutrition and FoodSearchResult
 import '../models/food_nutrition.dart';
 import 'food_service.dart';
 

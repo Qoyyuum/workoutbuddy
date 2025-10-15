@@ -56,21 +56,25 @@ class _FoodEntryWearScreenState extends State<FoodEntryWearScreen> {
 
     try {
       final results = await _foodService.searchFood(_searchController.text.trim());
+      if (!mounted) return;
+      
       setState(() {
         _searchResults = results;
         _isLoading = false;
         if (results.isEmpty) {
           _message = 'No results';
-        } else {
-          // Auto-navigate to results page
-          _pageController.animateToPage(
-            1,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
         }
       });
+      
+      if (results.isNotEmpty) {
+        _pageController.animateToPage(
+          1,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _message = 'Error: ${e.toString()}';
@@ -86,6 +90,7 @@ class _FoodEntryWearScreenState extends State<FoodEntryWearScreen> {
 
     try {
       final nutrition = await _foodService.getFoodNutrition(food.foodId);
+      if (!mounted) return;
       
       setState(() {
         _selectedNutrition = nutrition;
@@ -99,6 +104,7 @@ class _FoodEntryWearScreenState extends State<FoodEntryWearScreen> {
         curve: Curves.easeInOut,
       );
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _message = 'Error: ${e.toString()}';
@@ -126,6 +132,7 @@ class _FoodEntryWearScreenState extends State<FoodEntryWearScreen> {
         timestamp: DateTime.now(),
       );
       await DatabaseService.instance.insertFoodEntry(entry);
+      if (!mounted) return;
 
       // Apply stat changes
       final statChanges = _selectedNutrition!.calculateStatImpact();
@@ -156,6 +163,7 @@ class _FoodEntryWearScreenState extends State<FoodEntryWearScreen> {
         }
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _message = 'Error: ${e.toString()}';

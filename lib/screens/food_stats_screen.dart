@@ -43,7 +43,7 @@ class _FoodStatsScreenState extends State<FoodStatsScreen> {
       
       for (final key in keys) {
         final value = await db.getSetting(key);
-        if (value != null) {
+        if (value != null && value.isNotEmpty) {
           profileData[key] = value;
         }
       }

@@ -60,7 +60,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       
       for (final key in keys) {
         final value = await db.getSetting(key);
-        if (value != null) {
+        if (value != null && value.isNotEmpty) {
           profileData[key] = value;
         }
       }

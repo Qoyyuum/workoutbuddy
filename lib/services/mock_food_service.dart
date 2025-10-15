@@ -3,6 +3,7 @@ import '../models/food_nutrition.dart';
 import 'food_service.dart';
 
 /// Mock food service for testing without FatSecret API
+/// Provides FoodSearchResult and FoodNutrition from food_nutrition.dart
 class MockFoodService implements FoodService {
   // Mock food database
   static final List<Map<String, dynamic>> _mockFoods = [
