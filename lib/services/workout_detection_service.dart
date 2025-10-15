@@ -147,9 +147,15 @@ class WorkoutDetectionService {
       final dataTypes = _getHealthDataTypes(workoutType);
       
       if (!_isHealthInitialized) {
+        // Create permissions list matching dataTypes length (required by health package API)
+        final permissions = List<HealthDataAccess>.filled(
+          dataTypes.length,
+          HealthDataAccess.READ,
+        );
+        
         final permissionsGranted = await _health.requestAuthorization(
           dataTypes,
-          permissions: [HealthDataAccess.READ],
+          permissions: permissions,
         );
         
         if (!permissionsGranted) {
