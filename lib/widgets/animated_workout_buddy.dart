@@ -216,8 +216,9 @@ class _AnimatedWorkoutBuddyState extends State<AnimatedWorkoutBuddy>
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
-        return Transform.scale(
-          scaleY: 2.0 - _scaleAnimation.value, // Compress vertically
+        return Transform(
+          transform: Matrix4.identity()..scale(1.0, 2.0 - _scaleAnimation.value, 1.0),
+          alignment: Alignment.center,
           child: Container(
             width: 120,
             height: 120,
