@@ -127,10 +127,10 @@ class _FoodEntryScreenState extends State<FoodEntryScreen> {
       _message = feedbackMessage;
     });
 
-    // Navigate back after a delay
+    // Navigate back after a delay, return true to indicate food was added
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       }
     });
   }
