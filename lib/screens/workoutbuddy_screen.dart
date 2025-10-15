@@ -5,6 +5,7 @@ import '../widgets/workoutbuddy_buttons.dart';
 import '../services/sound_service.dart';
 import 'food_entry_screen.dart';
 import 'food_stats_screen.dart';
+import 'workout_screen.dart';
 
 class WorkoutbuddyScreen extends StatefulWidget {
   const WorkoutbuddyScreen({super.key});
@@ -73,8 +74,8 @@ class _WorkoutbuddyScreenState extends State<WorkoutbuddyScreen>
       case 1: // Food - open food diary
         _openFoodDiary();
         break;
-      case 2: // Train
-        _currentWorkoutBuddy.train();
+      case 2: // Train - open workout screen
+        _openWorkoutScreen();
         break;
       case 3: // Battle
         _currentWorkoutBuddy.battle();
@@ -109,6 +110,23 @@ class _WorkoutbuddyScreenState extends State<WorkoutbuddyScreen>
     );
   }
 
+  Future<void> _openWorkoutScreen() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WorkoutScreen(
+          workoutBuddy: _currentWorkoutBuddy,
+          onStatUpdate: (statGains) {
+            setState(() {
+              // Stats are already updated via applyWorkoutGains in WorkoutBuddy
+              // Just trigger a rebuild to show updated stats
+            });
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,7 +145,7 @@ class _WorkoutbuddyScreenState extends State<WorkoutbuddyScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 child: const Text(
-                  'WORKOUTBUDDY',
+                  'WORKOUT BUDDY',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,

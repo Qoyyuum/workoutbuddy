@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/food_nutrition.dart';
 import '../models/food_diary_entry.dart';

@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'workout_type.dart';
 
 class WorkoutBuddy {
   String name;
@@ -7,9 +8,19 @@ class WorkoutBuddy {
   int maxHealth;
   int hunger;
   int strength;
+  int agility;
+  int endurance;
   int happiness;
   int age;
   List<List<int>> sprite;
+  
+  // Base stats (permanent)
+  int baseStrength;
+  int baseAgility;
+  int baseEndurance;
+  
+  // Temporary stat buffs (decay over time)
+  Map<StatType, StatBuff> activeBuffs;
   
   WorkoutBuddy({
     required this.name,
@@ -18,10 +29,19 @@ class WorkoutBuddy {
     this.maxHealth = 100,
     this.hunger = 50,
     this.strength = 10,
+    this.agility = 10,
+    this.endurance = 10,
     this.happiness = 50,
     this.age = 0,
     required this.sprite,
-  });
+    int? baseStrength,
+    int? baseAgility,
+    int? baseEndurance,
+    Map<StatType, StatBuff>? activeBuffs,
+  }) : baseStrength = baseStrength ?? strength,
+       baseAgility = baseAgility ?? agility,
+       baseEndurance = baseEndurance ?? endurance,
+       activeBuffs = activeBuffs ?? {};
 
   static WorkoutBuddy generateRandom() {
     final random = Random();
@@ -141,4 +161,69 @@ class WorkoutBuddy {
   bool get isDead => health <= 0;
   bool get isHungry => hunger > 70;
   bool get isHappy => happiness > 70;
+
+  /// Apply workout gains to stats
+  void applyWorkoutGains(Map<StatType, int> gains) {
+    for (final entry in gains.entries) {
+      final statType = entry.key;
+      final amount = entry.value;
+      
+      // Create temporary buff that lasts 2 hours and decays over time
+      final buff = StatBuff(
+        amount: amount,
+        createdAt: DateTime.now(),
+        duration: const Duration(hours: 2),
+      );
+      
+      // Add or stack the buff
+      if (activeBuffs.containsKey(statType)) {
+        final existingBuff = activeBuffs[statType]!;
+        final combinedAmount = existingBuff.currentAmount + amount;
+        activeBuffs[statType] = StatBuff(
+          amount: combinedAmount,
+          createdAt: DateTime.now(),
+          duration: const Duration(hours: 2),
+        );
+      } else {
+        activeBuffs[statType] = buff;
+      }
+      
+      // Update current stats
+      _updateCurrentStats();
+    }
+  }
+
+  /// Update current stats based on base stats + active buffs
+  void _updateCurrentStats() {
+    // Clean up expired buffs first
+    activeBuffs.removeWhere((_, buff) => buff.isExpired);
+    
+    // Calculate current stats
+    strength = baseStrength + (activeBuffs[StatType.strength]?.currentAmount ?? 0);
+    agility = baseAgility + (activeBuffs[StatType.agility]?.currentAmount ?? 0);
+    endurance = baseEndurance + (activeBuffs[StatType.endurance]?.currentAmount ?? 0);
+  }
+
+  /// Get current effective stats (base + buffs)
+  Map<StatType, int> get currentStats {
+    _updateCurrentStats();
+    return {
+      StatType.strength: strength,
+      StatType.agility: agility,
+      StatType.endurance: endurance,
+      StatType.health: health,
+      StatType.happiness: happiness,
+    };
+  }
+
+  /// Get base stats (permanent)
+  Map<StatType, int> get baseStats {
+    return {
+      StatType.strength: baseStrength,
+      StatType.agility: baseAgility,
+      StatType.endurance: baseEndurance,
+      StatType.health: health,
+      StatType.happiness: happiness,
+    };
+  }
 }
