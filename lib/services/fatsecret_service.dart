@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+// Provides both FoodNutrition and FoodSearchResult
 import '../models/food_nutrition.dart';
+import 'food_service.dart';
 
-class FatSecretService {
+class FatSecretService implements FoodService {
   static final FatSecretService _instance = FatSecretService._internal();
   factory FatSecretService() => _instance;
   FatSecretService._internal();
@@ -49,6 +51,7 @@ class FatSecretService {
   }
 
   // Search for food by name
+  @override
   Future<List<FoodSearchResult>> searchFood(String query) async {
     debugPrint('🔍 Searching for food: "$query"');
     await _authenticate();
@@ -98,6 +101,7 @@ class FatSecretService {
   }
 
   // Get detailed nutrition info for a specific food
+  @override
   Future<FoodNutrition?> getFoodNutrition(String foodId) async {
     await _authenticate();
 

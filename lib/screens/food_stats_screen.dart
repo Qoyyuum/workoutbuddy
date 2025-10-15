@@ -43,7 +43,7 @@ class _FoodStatsScreenState extends State<FoodStatsScreen> {
       
       for (final key in keys) {
         final value = await db.getSetting(key);
-        if (value != null) {
+        if (value != null && value.isNotEmpty) {
           profileData[key] = value;
         }
       }
@@ -74,7 +74,9 @@ class _FoodStatsScreenState extends State<FoodStatsScreen> {
   Widget build(BuildContext context) {
     final totalCalories = _todaysMacros['calories'] ?? 0.0;
     final caloriesRemaining = _calorieGoal - totalCalories;
-    final progressPercent = (totalCalories / _calorieGoal).clamp(0.0, 1.0);
+    final progressPercent = _calorieGoal <= 0 
+        ? 0.0 
+        : (totalCalories / _calorieGoal).clamp(0.0, 1.0);
 
     return Scaffold(
       backgroundColor: const Color(0xFF2C2C2C),

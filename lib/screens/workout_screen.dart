@@ -201,10 +201,6 @@ class _WorkoutScreenState extends State<WorkoutScreen>
     }
   }
 
-  void _addManualRep() {
-    _detectionService.addRep();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -306,26 +302,20 @@ class _WorkoutScreenState extends State<WorkoutScreen>
                         ],
                       ),
                       const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          ElevatedButton(
-                            onPressed: _addManualRep,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text('Add Rep'),
+                      // Stop button centered (no manual rep cheating allowed!)
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: _stopWorkout,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
                           ),
-                          ElevatedButton(
-                            onPressed: _stopWorkout,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text('Stop'),
+                          child: const Text(
+                            'Stop Workout',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
-                        ],
+                        ),
                       ),
                     ],
                   ),

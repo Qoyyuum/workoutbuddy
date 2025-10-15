@@ -52,3 +52,4 @@ app.*.map.json
 GeneratedPluginRegistrant.swift
 
 .env*
+macos/Flutter/GeneratedPluginRegistrant.swift
