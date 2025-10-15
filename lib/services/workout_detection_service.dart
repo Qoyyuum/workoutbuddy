@@ -9,6 +9,8 @@ class WorkoutDetectionService {
   factory WorkoutDetectionService() => _instance;
   WorkoutDetectionService._internal();
 
+  // StreamController persists across workout sessions (broadcast stream)
+  // Callers are responsible for canceling their stream subscriptions
   StreamController<WorkoutSession>? _workoutController;
   Timer? _workoutTimer;
   WorkoutType? _currentWorkoutType;
@@ -16,7 +18,15 @@ class WorkoutDetectionService {
   int _currentReps = 0;
   bool _isHealthConnectInitialized = false;
   bool _isPolling = false;
+  
+  // Circuit breaker for Health Connect failures
+  int _healthConnectFailureCount = 0;
+  static const int _maxHealthConnectFailures = 3;
+  bool _healthConnectCircuitOpen = false;
 
+  /// Stream of workout session updates
+  /// Note: This is a broadcast stream that persists across multiple workout sessions.
+  /// Listeners should cancel their subscriptions when no longer needed to prevent memory leaks.
   Stream<WorkoutSession> get workoutStream => _workoutController?.stream ?? const Stream.empty();
 
   /// Start detecting a specific workout type
@@ -37,6 +47,10 @@ class WorkoutDetectionService {
     _workoutStartTime = DateTime.now();
     _currentReps = 0;
     _isPolling = false;
+    
+    // Reset circuit breaker for new workout
+    _healthConnectFailureCount = 0;
+    _healthConnectCircuitOpen = false;
     
     _workoutController ??= StreamController<WorkoutSession>.broadcast();
     
@@ -152,7 +166,19 @@ class WorkoutDetectionService {
       // Reentrancy guard: prevent overlapping polls
       if (_isPolling) return;
       
+      // Circuit breaker: stop polling if Health Connect consistently fails
+      if (_healthConnectCircuitOpen) {
+        if (kDebugMode) {
+          print('🔌 Circuit breaker open - Health Connect polling disabled');
+          print('   Falling back to simulation mode');
+        }
+        timer.cancel();
+        _simulateWorkoutDetection(workoutType);
+        return;
+      }
+      
       _isPolling = true;
+      bool successfulPoll = false;
       try {
         final endTime = DateTime.now();
         final startTime = _workoutStartTime ?? endTime.subtract(const Duration(seconds: 30));
@@ -168,6 +194,9 @@ class WorkoutDetectionService {
               type: HealthConnectDataType.ExerciseSession,
               startTime: startTime,
               endTime: endTime,
+            ).timeout(
+              const Duration(seconds: 10),
+              onTimeout: () => throw TimeoutException('ExerciseSession query timed out'),
             );
             
             final sessions = sessionData['data'] as List?;
@@ -191,6 +220,9 @@ class WorkoutDetectionService {
                 type: HealthConnectDataType.Steps,
                 startTime: startTime,
                 endTime: endTime,
+              ).timeout(
+                const Duration(seconds: 10),
+                onTimeout: () => throw TimeoutException('Steps query timed out'),
               );
               
               final records = stepsData['data'] as List?;
@@ -211,6 +243,7 @@ class WorkoutDetectionService {
                   if (estimatedReps > 0 && estimatedReps < 1000) {
                     _currentReps = estimatedReps;
                     _emitCurrentState();
+                    successfulPoll = true;
                     
                     if (kDebugMode) {
                       print('⚠️ WARNING: Using step count as rep proxy (UNRELIABLE)');
@@ -234,12 +267,16 @@ class WorkoutDetectionService {
               type: HealthConnectDataType.ExerciseSession,
               startTime: startTime,
               endTime: endTime,
+            ).timeout(
+              const Duration(seconds: 10),
+              onTimeout: () => throw TimeoutException('ExerciseSession query timed out'),
             );
             
             final sessions = sessionData['data'] as List?;
             if (sessions != null && sessions.isNotEmpty) {
               final duration = DateTime.now().difference(_workoutStartTime!);
               _emitCurrentState();
+              successfulPoll = true;
               if (kDebugMode) {
                 print('⏱️ Health Connect tracking ${workoutType.displayName}: ${duration.inSeconds}s');
               }
@@ -250,9 +287,27 @@ class WorkoutDetectionService {
             }
           }
         }
+        
+        // Reset failure count on successful poll
+        if (successfulPoll) {
+          _healthConnectFailureCount = 0;
+        }
       } catch (e) {
+        // Increment failure count on error
+        _healthConnectFailureCount++;
+        
         if (kDebugMode) {
           print('❌ Error reading Health Connect data: $e');
+          print('   Failure count: $_healthConnectFailureCount/$_maxHealthConnectFailures');
+        }
+        
+        // Open circuit breaker if threshold reached
+        if (_healthConnectFailureCount >= _maxHealthConnectFailures) {
+          _healthConnectCircuitOpen = true;
+          if (kDebugMode) {
+            print('🔌 Circuit breaker opened after $_healthConnectFailureCount consecutive failures');
+            print('   Health Connect polling will stop and fall back to simulation');
+          }
         }
       } finally {
         _isPolling = false;
