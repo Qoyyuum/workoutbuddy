@@ -16,6 +16,7 @@ class WorkoutDetectionService {
   DateTime? _workoutStartTime;
   int _currentReps = 0;
   bool _isHealthConnectInitialized = false;
+  bool _isPolling = false;
 
   Stream<WorkoutSession> get workoutStream => _workoutController?.stream ?? const Stream.empty();
 
@@ -24,6 +25,7 @@ class WorkoutDetectionService {
     _currentWorkoutType = workoutType;
     _workoutStartTime = DateTime.now();
     _currentReps = 0;
+    _isPolling = false;
     
     _workoutController ??= StreamController<WorkoutSession>.broadcast();
     
@@ -59,6 +61,8 @@ class WorkoutDetectionService {
     _currentWorkoutType = null;
     _workoutStartTime = null;
     _currentReps = 0;
+    _isPolling = false;
+
 
     if (kDebugMode) {
       print('🏁 Workout session completed: ${session.type.displayName} - ${session.reps} reps in ${session.duration.inMinutes}m');
@@ -120,6 +124,10 @@ class WorkoutDetectionService {
     List<HealthConnectDataType> dataTypes,
   ) async {
     // Poll for new exercise data periodically
+      // Reentrancy guard: prevent overlapping polls
+      if (_isPolling) return;
+      
+      _isPolling = true;
     _workoutTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
       try {
         final endTime = DateTime.now();
@@ -143,6 +151,7 @@ class WorkoutDetectionService {
                 totalSteps += (record['count'] as num?)?.toInt() ?? 0;
               }
               // Scale down steps to reasonable rep count (rough estimate)
+              _emitCurrentState();
               _currentReps = (totalSteps / 10).round();
               
               if (kDebugMode) {
@@ -164,6 +173,7 @@ class WorkoutDetectionService {
             );
             
             final sessions = sessionData['data'] as List?;
+              _emitCurrentState();
             if (sessions != null && sessions.isNotEmpty) {
               final duration = DateTime.now().difference(_workoutStartTime!);
               if (kDebugMode) {
@@ -175,10 +185,15 @@ class WorkoutDetectionService {
               print('⚠️ Could not read exercise session data: $e');
             }
           }
+        
+        // Emit final state update at end of polling cycle
+        _emitCurrentState();
         }
       } catch (e) {
         if (kDebugMode) {
           print('❌ Error reading Health Connect data: $e');
+      } finally {
+        _isPolling = false;
         }
       }
     });
@@ -222,6 +237,7 @@ class WorkoutDetectionService {
     // Simulate rep detection every 2-5 seconds for rep-based exercises
     if (_isRepBasedExercise(workoutType)) {
       _workoutTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+        _emitCurrentState();
         _currentReps++;
         if (kDebugMode) {
           print('🔄 Detected rep #$_currentReps for ${workoutType.displayName}');
@@ -229,6 +245,7 @@ class WorkoutDetectionService {
       });
     } else {
       // For time-based exercises, just track duration
+        _emitCurrentState();
       _workoutTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
         if (kDebugMode) {
           final elapsed = DateTime.now().difference(_workoutStartTime!);
@@ -237,10 +254,24 @@ class WorkoutDetectionService {
       });
     }
   }
+  /// Emit current workout state to listeners
+  void _emitCurrentState() {
+    if (_currentWorkoutType == null || _workoutStartTime == null) return;
+    
+    final duration = DateTime.now().difference(_workoutStartTime!);
+    final session = WorkoutSession.create(
+      type: _currentWorkoutType!,
+      reps: _currentReps,
+      duration: duration,
+    );
+    _workoutController?.add(session);
+  }
+
 
   /// Manually add a rep (for manual input mode)
   void addRep() {
     if (_currentWorkoutType != null) {
+      _emitCurrentState();
       _currentReps++;
       if (kDebugMode) {
         print('➕ Manual rep added: $_currentReps');
@@ -286,7 +317,8 @@ class WorkoutDetectionService {
   }
 
   void dispose() {
-    _workoutTimer?.cancel();
+    _workoutTimer?.cancel();;
+    _isPolling = false
     _workoutController?.close();
   }
 }

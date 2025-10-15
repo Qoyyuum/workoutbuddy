@@ -28,19 +28,18 @@ class WorkoutSession {
     final statGains = <StatType, int>{};
     
     // Calculate stat gains based on workout type
-    if (type.primaryStat == StatType.strength || 
-        type.primaryStat == StatType.agility) {
-      // Rep-based exercises
+    if (type.isTimeBased) {
+      // Time-based exercises (running, walking, plank)
+      final minutes = duration.inSeconds / 60.0;
+      statGains[type.primaryStat] = (minutes * type.primaryStatGain).round();
+      if (type.secondaryStat != null) {
+        statGains[type.secondaryStat!] = (minutes * type.secondaryStatGain).round();
+      }
+    } else {
+      // Rep-based exercises (burpees, push-ups, etc.)
       statGains[type.primaryStat] = reps * type.primaryStatGain;
       if (type.secondaryStat != null) {
         statGains[type.secondaryStat!] = reps * type.secondaryStatGain;
-      }
-    } else {
-      // Time-based exercises (endurance)
-      final minutes = duration.inMinutes;
-      statGains[type.primaryStat] = minutes * type.primaryStatGain;
-      if (type.secondaryStat != null) {
-        statGains[type.secondaryStat!] = minutes * type.secondaryStatGain;
       }
     }
 

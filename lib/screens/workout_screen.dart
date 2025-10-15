@@ -67,6 +67,12 @@ class _WorkoutScreenState extends State<WorkoutScreen>
   }
 
   void _onWorkoutCompleted(WorkoutSession session) {
+    // Cancel UI timer to stop further ticks
+    _uiTimer?.cancel();
+    _uiTimer = null;
+    
+    if (!mounted) return;
+    
     setState(() {
       _isWorkoutActive = false;
       _selectedWorkout = null;
@@ -75,6 +81,8 @@ class _WorkoutScreenState extends State<WorkoutScreen>
     // Apply stat gains to workout buddy
     widget.workoutBuddy.applyWorkoutGains(session.statGains);
     widget.onStatUpdate(session.statGains);
+    
+    if (!mounted) return;
     
     // Show stat gain animations
     _showStatGainAnimations(session.statGains);
@@ -91,24 +99,32 @@ class _WorkoutScreenState extends State<WorkoutScreen>
         animationController: _statAnimationController,
       );
       
-      setState(() {
-        _activeStatGains.add(statGain);
-      });
+      if (mounted) {
+        setState(() {
+          _activeStatGains.add(statGain);
+        });
+      }
       
       // Remove after animation completes
       Timer(const Duration(milliseconds: 1500), () {
-        setState(() {
-          _activeStatGains.remove(statGain);
-        });
+        if (mounted) {
+          setState(() {
+            _activeStatGains.remove(statGain);
+          });
+        }
       });
     }
     
     _statAnimationController.forward().then((_) {
-      _statAnimationController.reset();
+      if (mounted) {
+        _statAnimationController.reset();
+      }
     });
   }
 
   void _showWorkoutCompletionDialog(WorkoutSession session) {
+    if (!mounted) return;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -151,8 +167,14 @@ class _WorkoutScreenState extends State<WorkoutScreen>
     // Start workout detection
     await _detectionService.startWorkoutDetection(workoutType);
     
+    if (!mounted) return;
+    
     // Start UI update timer
     _uiTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       final status = _detectionService.currentStatus;
       setState(() {
         _currentReps = status['reps'] ?? 0;
@@ -164,15 +186,18 @@ class _WorkoutScreenState extends State<WorkoutScreen>
   void _stopWorkout() {
     final session = _detectionService.stopWorkoutDetection();
     _uiTimer?.cancel();
+    _uiTimer = null;
     _buddyAnimationController.stop();
     
     if (session != null) {
       _onWorkoutCompleted(session);
     } else {
-      setState(() {
-        _isWorkoutActive = false;
-        _selectedWorkout = null;
-      });
+      if (mounted) {
+        setState(() {
+          _isWorkoutActive = false;
+          _selectedWorkout = null;
+        });
+      }
     }
   }
 
@@ -233,7 +258,7 @@ class _WorkoutScreenState extends State<WorkoutScreen>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: Colors.black.withOpacity(0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),

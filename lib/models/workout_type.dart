@@ -125,6 +125,24 @@ extension WorkoutTypeExtension on WorkoutType {
 
   /// Points gained per rep/minute for secondary stat
   int get secondaryStatGain => (primaryStatGain * 0.5).round();
+
+  /// Whether this workout is time-based (true) or rep-based (false)
+  bool get isTimeBased {
+    switch (this) {
+      case WorkoutType.running:
+      case WorkoutType.walking:
+      case WorkoutType.plank:
+        return true;
+      case WorkoutType.pushUp:
+      case WorkoutType.sitUp:
+      case WorkoutType.squat:
+      case WorkoutType.jumping:
+      case WorkoutType.burpee:
+      case WorkoutType.pullUp:
+      case WorkoutType.lunges:
+        return false;
+    }
+  }
 }
 
 enum StatType {
