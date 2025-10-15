@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.health.READ_SPEED"/>
     
     <application
-        android:label="workoutbuddy"
+        android:label="Workout Buddy"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

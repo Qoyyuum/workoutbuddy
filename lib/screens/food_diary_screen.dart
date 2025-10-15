@@ -158,12 +158,12 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            status['color'].withOpacity(0.1),
-            status['color'].withOpacity(0.05),
+            status['color'].withValues(alpha: 0.1),
+            status['color'].withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: status['color'].withOpacity(0.3)),
+        border: Border.all(color: status['color'].withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,9 +265,9 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         '$label: ${value.toStringAsFixed(0)}g',
@@ -287,7 +287,7 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
         leading: CircleAvatar(
           backgroundColor: Colors.blue[100],
           child: Text(
-            '${entry.calories.toStringAsFixed(0)}',
+            entry.calories.toStringAsFixed(0),
             style: TextStyle(
               color: Colors.blue[900],
               fontWeight: FontWeight.bold,
