@@ -77,9 +77,8 @@ class _StatGainWidgetState extends State<StatGainWidget> {
     return AnimatedBuilder(
       animation: widget.animationController,
       builder: (context, child) {
-        return Positioned(
-          right: 20,
-          top: 100 + _slideAnimation.value,
+        return Transform.translate(
+          offset: Offset(0, _slideAnimation.value),
           child: Opacity(
             opacity: _fadeAnimation.value,
             child: Transform.scale(
@@ -197,10 +196,12 @@ class _StatGainAnimationOverlayState extends State<StatGainAnimationOverlay>
         final index = entry.key;
         final widget_ = entry.value;
         
-        return Positioned(
-          right: 20,
-          top: 100 + (index * 30), // Offset each stat gain vertically
-          child: widget_,
+        return Align(
+          alignment: Alignment.topRight,
+          child: Transform.translate(
+            offset: Offset(-20, 100 + (index * 30)), // Position from top-right
+            child: widget_,
+          ),
         );
       }).toList(),
     );
