@@ -143,10 +143,19 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
 
   Widget _buildDateHeader(String dateStr, List<FoodDiaryEntry> entries) {
     final date = DateTime.parse(dateStr);
-    final isToday = DateFormat('yyyy-MM-dd').format(DateTime.now()) == dateStr;
-    final displayDate = isToday 
-        ? 'Today' 
-        : DateFormat('EEEE, MMM d').format(date);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final entryDate = DateTime(date.year, date.month, date.day);
+    
+    final String displayDate;
+    if (entryDate == today) {
+      displayDate = 'Today';
+    } else if (entryDate == yesterday) {
+      displayDate = 'Yesterday';
+    } else {
+      displayDate = DateFormat('EEEE, MMM d').format(date);
+    }
     
     final totals = _calculateDailyTotals(entries);
     final calorieGoal = _userProfile?.getCalorieGoal() ?? 2000;
