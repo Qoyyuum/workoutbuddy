@@ -21,12 +21,25 @@ class WorkoutDetectionService {
 
   /// Start detecting a specific workout type
   Future<void> startWorkoutDetection(WorkoutType workoutType) async {
+    // Cancel any existing timer to prevent overlapping timers
+    _workoutTimer?.cancel();
+    _workoutTimer = null;
+    _isPolling = false;
+    
+    // Initialize workout state
     _currentWorkoutType = workoutType;
     _workoutStartTime = DateTime.now();
     _currentReps = 0;
-    _isPolling = false;
     
     _workoutController ??= StreamController<WorkoutSession>.broadcast();
+    
+    // Emit initial state snapshot so listeners receive first data immediately
+    final initialSession = WorkoutSession.create(
+      type: workoutType,
+      reps: 0,
+      duration: Duration.zero,
+    );
+    _workoutController?.add(initialSession);
     
     if (kDebugMode) {
       print('🏋️ Started detecting ${workoutType.displayName}');
@@ -188,9 +201,6 @@ class WorkoutDetectionService {
             }
           }
         }
-        
-        // Emit final state update at end of polling cycle
-        _emitCurrentState();
       } catch (e) {
         if (kDebugMode) {
           print('❌ Error reading Health Connect data: $e');
