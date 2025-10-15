@@ -402,7 +402,8 @@ class WorkoutDetectionService {
 
   /// Manual detection for web/desktop platforms
   Future<void> _startManualDetection(WorkoutType workoutType) async {
-    // Manual mode currently uses simulation; users can call addRep() to manually log reps
+    // Manual mode uses simulation for demonstration/testing
+    // Note: addRep() method exists but is NOT exposed in UI to prevent cheating
     _simulateWorkoutDetection(workoutType);
   }
 
@@ -442,7 +443,17 @@ class WorkoutDetectionService {
   }
 
 
-  /// Manually add a rep (for manual input mode)
+  /// Manually add a rep (internal method, not exposed in UI)
+  /// 
+  /// **Note:** This method is intentionally NOT exposed in the workout UI to prevent
+  /// users from cheating their workouts by manually inflating rep counts.
+  /// 
+  /// Kept for potential future use in:
+  /// - Debug/testing mode
+  /// - Accessibility features
+  /// - Web/desktop fallback when health APIs unavailable
+  /// 
+  /// Do NOT add UI buttons that call this method during normal workouts.
   void addRep() {
     if (_currentWorkoutType != null) {
       _currentReps++;
