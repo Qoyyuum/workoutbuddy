@@ -19,7 +19,7 @@ import '../models/workout_session.dart';
 ///    - Requires user to actively record workouts in health apps (Google Fit, Apple Health)
 ///    - If no workout session detected: falls back to step estimation or simulation
 ///    - Workout data may have delay (not real-time on some devices)
-///    - Rep-specific metrics not currently parsed from workout data (see TODO at line ~205)
+///    - Rep-specific metrics not currently parsed from workout data (see TODO at line 249)
 /// 
 /// 3. **Circuit Breaker Recovery**
 ///    - Opens after 3 consecutive health API failures (prevents battery drain)
