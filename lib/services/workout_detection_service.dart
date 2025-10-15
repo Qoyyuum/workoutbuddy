@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_health_connect/flutter_health_connect.dart';
+import 'package:health/health.dart';
 import '../models/workout_type.dart';
 import '../models/workout_session.dart';
 
@@ -16,13 +16,16 @@ class WorkoutDetectionService {
   WorkoutType? _currentWorkoutType;
   DateTime? _workoutStartTime;
   int _currentReps = 0;
-  bool _isHealthConnectInitialized = false;
+  bool _isHealthInitialized = false;
   bool _isPolling = false;
   
-  // Circuit breaker for Health Connect failures
-  int _healthConnectFailureCount = 0;
-  static const int _maxHealthConnectFailures = 3;
-  bool _healthConnectCircuitOpen = false;
+  // Health package instance
+  final Health _health = Health();
+  
+  // Circuit breaker for health API failures
+  int _healthFailureCount = 0;
+  static const int _maxHealthFailures = 3;
+  bool _healthCircuitOpen = false;
 
   /// Stream of workout session updates
   /// Note: This is a broadcast stream that persists across multiple workout sessions.
@@ -49,9 +52,9 @@ class WorkoutDetectionService {
     _isPolling = false;
     
     // Reset circuit breaker for new workout (provides recovery opportunity)
-    // This allows Health Connect to be retried after temporary failures
-    _healthConnectFailureCount = 0;
-    _healthConnectCircuitOpen = false;
+    // This allows health API to be retried after temporary failures
+    _healthFailureCount = 0;
+    _healthCircuitOpen = false;
     
     _workoutController ??= StreamController<WorkoutSession>.broadcast();
     
@@ -64,7 +67,7 @@ class WorkoutDetectionService {
     _workoutController?.add(initialSession);
     
     if (kDebugMode) {
-      print('🏋️ Started detecting ${workoutType.displayName}');
+      debugPrint('🏋️ Started detecting ${workoutType.displayName}');
     }
 
     // For now, we'll use platform-specific detection methods
@@ -104,81 +107,68 @@ class WorkoutDetectionService {
     _isPolling = false;
 
     if (kDebugMode) {
-      print('🏁 Workout session completed: ${session.type.displayName} - ${session.reps} reps in ${session.duration.inMinutes}m');
+      debugPrint('🏁 Workout session completed: ${session.type.displayName} - ${session.reps} reps in ${session.duration.inMinutes}m');
     }
 
     return session;
   }
 
-  /// Android-specific workout detection using Health Connect
+  /// Android/iOS workout detection using health package (Health Connect/HealthKit)
   Future<void> _startAndroidDetection(WorkoutType workoutType) async {
     try {
-      // Initialize Health Connect if not already done
-      if (!_isHealthConnectInitialized) {
-        final isAvailable = await HealthConnectFactory.isAvailable();
-        if (!isAvailable) {
+      // Request permissions for workout data types
+      final dataTypes = _getHealthDataTypes(workoutType);
+      
+      if (!_isHealthInitialized) {
+        final permissionsGranted = await _health.requestAuthorization(
+          dataTypes,
+          permissions: [HealthDataAccess.READ],
+        );
+        
+        if (!permissionsGranted) {
           if (kDebugMode) {
-            print('⚠️ Health Connect not available, falling back to simulation');
+            debugPrint('⚠️ Health permissions denied, falling back to simulation');
           }
           _simulateWorkoutDetection(workoutType);
           return;
         }
-        _isHealthConnectInitialized = true;
-      }
-
-      // Request permissions for workout data types
-      final dataTypes = _getHealthConnectDataTypes(workoutType);
-      final permissionsGranted = await HealthConnectFactory.requestPermissions(
-        dataTypes,
-        readOnly: true,
-      );
-      
-      if (!permissionsGranted) {
-        if (kDebugMode) {
-          print('⚠️ Health Connect permissions denied, falling back to simulation');
-        }
-        _simulateWorkoutDetection(workoutType);
-        return;
+        _isHealthInitialized = true;
       }
 
       if (kDebugMode) {
-        print('✅ Health Connect initialized and permissions granted');
+        debugPrint('✅ Health API initialized and permissions granted');
       }
 
       // Start monitoring for exercise data
-      await _monitorHealthConnectData(workoutType, dataTypes);
+      await _monitorHealthData(workoutType, dataTypes);
       
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Error initializing Health Connect: $e');
-        print('Falling back to simulation mode');
+        debugPrint('❌ Error initializing health API: $e');
+        debugPrint('Falling back to simulation mode');
       }
       _simulateWorkoutDetection(workoutType);
     }
   }
 
-  /// Monitor Health Connect for workout data updates
+  /// Monitor health data updates (Health Connect on Android, HealthKit on iOS)
   /// 
-  /// TODO: Consider using Health Connect change tokens for more efficient polling
-  /// Instead of querying the entire workout window on each poll, use:
-  /// - getChangesToken(dataTypes) at workout start
-  /// - getChanges(token) in each poll to get only incremental changes
-  /// - Update token after each successful poll
+  /// TODO: Consider using change tokens for more efficient polling
   /// This would reduce API load and improve efficiency for longer workouts
-  Future<void> _monitorHealthConnectData(
+  Future<void> _monitorHealthData(
     WorkoutType workoutType,
-    List<HealthConnectDataType> dataTypes,
+    List<HealthDataType> dataTypes,
   ) async {
     // Poll for new exercise data periodically
     _workoutTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
       // Reentrancy guard: prevent overlapping polls
       if (_isPolling) return;
       
-      // Circuit breaker: stop polling if Health Connect consistently fails
-      if (_healthConnectCircuitOpen) {
+      // Circuit breaker: stop polling if health API consistently fails
+      if (_healthCircuitOpen) {
         if (kDebugMode) {
-          print('🔌 Circuit breaker open - Health Connect polling disabled');
-          print('   Falling back to simulation mode');
+          debugPrint('🔌 Circuit breaker open - Health API polling disabled');
+          debugPrint('   Falling back to simulation mode');
         }
         // Clean transition: cancel this timer before starting simulation timer
         timer.cancel();
@@ -200,36 +190,35 @@ class WorkoutDetectionService {
           // For rep-based exercises, try to get exercise-specific data first
           bool repsDetected = false;
           
-          // Priority 1: Try to get ExerciseSession data which may contain rep counts
+          // Priority 1: Try to get Exercise/Workout data which may contain rep counts
           try {
-            final sessionData = await HealthConnectFactory.getRecord(
-              type: HealthConnectDataType.ExerciseSession,
+            final workoutData = await _health.getHealthDataFromTypes(
+              types: [HealthDataType.WORKOUT],
               startTime: startTime,
               endTime: endTime,
             ).timeout(
               const Duration(seconds: 10),
-              onTimeout: () => throw TimeoutException('ExerciseSession query timed out'),
+              onTimeout: () => throw TimeoutException('Workout query timed out'),
             );
             
-            final sessions = sessionData['data'] as List?;
-            if (sessions != null && sessions.isNotEmpty) {
-              // TODO: Parse ExerciseSession for rep-specific metrics if available
+            if (workoutData.isNotEmpty) {
+              // TODO: Parse workout data for rep-specific metrics if available
               // For now, this is a placeholder for future enhancement
               if (kDebugMode) {
-                print('📊 ExerciseSession data available but rep parsing not yet implemented');
+                debugPrint('📊 Workout data available but rep parsing not yet implemented');
               }
             }
           } catch (e) {
             if (kDebugMode) {
-              print('⚠️ Could not read exercise session data: $e');
+              debugPrint('⚠️ Could not read workout data: $e');
             }
           }
           
           // Priority 2: Fallback to steps (UNRELIABLE - use with caution)
           if (!repsDetected) {
             try {
-              final stepsData = await HealthConnectFactory.getRecord(
-                type: HealthConnectDataType.Steps,
+              final stepsData = await _health.getHealthDataFromTypes(
+                types: [HealthDataType.STEPS],
                 startTime: startTime,
                 endTime: endTime,
               ).timeout(
@@ -237,11 +226,12 @@ class WorkoutDetectionService {
                 onTimeout: () => throw TimeoutException('Steps query timed out'),
               );
               
-              final records = stepsData['data'] as List?;
-              if (records != null && records.isNotEmpty) {
+              if (stepsData.isNotEmpty) {
                 int totalSteps = 0;
-                for (var record in records) {
-                  totalSteps += (record['count'] as num?)?.toInt() ?? 0;
+                for (var point in stepsData) {
+                  if (point.value is NumericHealthValue) {
+                    totalSteps += (point.value as NumericHealthValue).numericValue.toInt();
+                  }
                 }
                 
                 // Apply minimum threshold - require meaningful activity
@@ -255,73 +245,72 @@ class WorkoutDetectionService {
                   if (estimatedReps > 0 && estimatedReps < 1000) {
                     _currentReps = estimatedReps;
                     _emitCurrentState();
-                    // Mark as successful - we got valid data from Health Connect
+                    // Mark as successful - we got valid data
                     successfulPoll = true;
                     
                     if (kDebugMode) {
-                      print('⚠️ WARNING: Using step count as rep proxy (UNRELIABLE)');
-                      print('   Steps: $totalSteps -> Estimated reps: $_currentReps (multiplier: $multiplier)');
-                      print('   ${workoutType.displayName} may not generate step-like movements');
-                      print('   Consider manual input for accuracy');
+                      debugPrint('⚠️ WARNING: Using step count as rep proxy (UNRELIABLE)');
+                      debugPrint('   Steps: $totalSteps -> Estimated reps: $_currentReps (multiplier: $multiplier)');
+                      debugPrint('   ${workoutType.displayName} may not generate step-like movements');
+                      debugPrint('   Consider manual input for accuracy');
                     }
                   }
                 }
               }
             } catch (e) {
               if (kDebugMode) {
-                print('⚠️ Could not read steps data: $e');
+                debugPrint('⚠️ Could not read steps data: $e');
               }
             }
           }
         } else {
-          // For time-based exercises, track duration via heart rate or exercise session
+          // For time-based exercises, track duration via workout data
           try {
-            final sessionData = await HealthConnectFactory.getRecord(
-              type: HealthConnectDataType.ExerciseSession,
+            final workoutData = await _health.getHealthDataFromTypes(
+              types: [HealthDataType.WORKOUT],
               startTime: startTime,
               endTime: endTime,
             ).timeout(
               const Duration(seconds: 10),
-              onTimeout: () => throw TimeoutException('ExerciseSession query timed out'),
+              onTimeout: () => throw TimeoutException('Workout query timed out'),
             );
             
-            final sessions = sessionData['data'] as List?;
-            if (sessions != null && sessions.isNotEmpty) {
+            if (workoutData.isNotEmpty) {
               final duration = DateTime.now().difference(_workoutStartTime!);
               _emitCurrentState();
-              // Mark as successful - we got valid session data from Health Connect
+              // Mark as successful - we got valid session data
               successfulPoll = true;
               if (kDebugMode) {
-                print('⏱️ Health Connect tracking ${workoutType.displayName}: ${duration.inSeconds}s');
+                debugPrint('⏱️ Health tracking ${workoutType.displayName}: ${duration.inSeconds}s');
               }
             }
           } catch (e) {
             if (kDebugMode) {
-              print('⚠️ Could not read exercise session data: $e');
+              debugPrint('⚠️ Could not read workout data: $e');
             }
           }
         }
         
         // Reset failure count on successful poll (prevents circuit breaker from opening)
-        // successfulPoll is only true if we retrieved and processed valid Health Connect data
+        // successfulPoll is only true if we retrieved and processed valid health data
         if (successfulPoll) {
-          _healthConnectFailureCount = 0;
+          _healthFailureCount = 0;
         }
       } catch (e) {
         // Increment failure count on error
-        _healthConnectFailureCount++;
+        _healthFailureCount++;
         
         if (kDebugMode) {
-          print('❌ Error reading Health Connect data: $e');
-          print('   Failure count: $_healthConnectFailureCount/$_maxHealthConnectFailures');
+          debugPrint('❌ Error reading health data: $e');
+          debugPrint('   Failure count: $_healthFailureCount/$_maxHealthFailures');
         }
         
         // Open circuit breaker if threshold reached
-        if (_healthConnectFailureCount >= _maxHealthConnectFailures) {
-          _healthConnectCircuitOpen = true;
+        if (_healthFailureCount >= _maxHealthFailures) {
+          _healthCircuitOpen = true;
           if (kDebugMode) {
-            print('🔌 Circuit breaker opened after $_healthConnectFailureCount consecutive failures');
-            print('   Health Connect polling will stop and fall back to simulation');
+            debugPrint('🔌 Circuit breaker opened after $_healthFailureCount consecutive failures');
+            debugPrint('   Health API polling will stop and fall back to simulation');
           }
         }
       } finally {
@@ -330,31 +319,31 @@ class WorkoutDetectionService {
     });
   }
 
-  /// Get relevant Health Connect data types for a workout
-  List<HealthConnectDataType> _getHealthConnectDataTypes(WorkoutType workoutType) {
+  /// Get relevant health data types for a workout (cross-platform)
+  List<HealthDataType> _getHealthDataTypes(WorkoutType workoutType) {
     // Common data types for all workouts
-    final dataTypes = <HealthConnectDataType>[
-      HealthConnectDataType.ExerciseSession,
-      HealthConnectDataType.HeartRate,
+    final dataTypes = <HealthDataType>[
+      HealthDataType.WORKOUT,
+      HealthDataType.HEART_RATE,
     ];
 
     // Add specific data types based on workout
     if (_isRepBasedExercise(workoutType)) {
-      dataTypes.add(HealthConnectDataType.Steps);
+      dataTypes.add(HealthDataType.STEPS);
     } else {
       // Time-based exercises
-      dataTypes.add(HealthConnectDataType.Distance);
-      dataTypes.add(HealthConnectDataType.Speed);
+      dataTypes.add(HealthDataType.DISTANCE_DELTA);
+      dataTypes.add(HealthDataType.ACTIVE_ENERGY_BURNED);
     }
 
     return dataTypes;
   }
 
-  /// iOS-specific workout detection using HealthKit
+  /// iOS-specific workout detection using HealthKit (via health package)
   Future<void> _startIOSDetection(WorkoutType workoutType) async {
-    // TODO: Implement HealthKit integration
-    // For now, simulate detection with timer
-    _simulateWorkoutDetection(workoutType);
+    // The health package provides unified API for both iOS HealthKit and Android Health Connect
+    // Use the same implementation as Android
+    await _startAndroidDetection(workoutType);
   }
 
   /// Manual detection for web/desktop platforms
@@ -371,7 +360,7 @@ class WorkoutDetectionService {
         _currentReps++;
         _emitCurrentState();
         if (kDebugMode) {
-          print('🔄 Detected rep #$_currentReps for ${workoutType.displayName}');
+          debugPrint('🔄 Detected rep #$_currentReps for ${workoutType.displayName}');
         }
       });
     } else {
@@ -380,7 +369,7 @@ class WorkoutDetectionService {
         _emitCurrentState();
         if (kDebugMode) {
           final elapsed = DateTime.now().difference(_workoutStartTime!);
-          print('⏱️ ${workoutType.displayName} duration: ${elapsed.inSeconds}s');
+          debugPrint('⏱️ ${workoutType.displayName} duration: ${elapsed.inSeconds}s');
         }
       });
     }
@@ -405,7 +394,7 @@ class WorkoutDetectionService {
       _currentReps++;
       _emitCurrentState();
       if (kDebugMode) {
-        print('➕ Manual rep added: $_currentReps');
+        debugPrint('➕ Manual rep added: $_currentReps');
       }
     }
   }
