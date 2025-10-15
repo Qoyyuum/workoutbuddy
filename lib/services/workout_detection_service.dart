@@ -72,12 +72,14 @@ class WorkoutDetectionService {
       duration: duration,
     );
 
+    // Emit final session to stream so all listeners receive the completed state
+    _workoutController?.add(session);
+
     _workoutTimer?.cancel();
     _currentWorkoutType = null;
     _workoutStartTime = null;
     _currentReps = 0;
     _isPolling = false;
-
 
     if (kDebugMode) {
       print('🏁 Workout session completed: ${session.type.displayName} - ${session.reps} reps in ${session.duration.inMinutes}m');
