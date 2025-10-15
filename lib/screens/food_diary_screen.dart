@@ -56,8 +56,10 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
       }
       
       // Load food entries for selected period
-      final endDate = DateTime.now();
-      final startDate = endDate.subtract(Duration(days: _selectedDays));
+      final now = DateTime.now();
+      final endDate = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+      final startDate = DateTime(now.year, now.month, now.day)
+          .subtract(Duration(days: _selectedDays - 1));
       _entries = await _db.getFoodEntriesByDateRange(startDate, endDate);
       
     } catch (e) {
