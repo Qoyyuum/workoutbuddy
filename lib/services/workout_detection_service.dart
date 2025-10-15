@@ -4,6 +4,33 @@ import 'package:health/health.dart';
 import '../models/workout_type.dart';
 import '../models/workout_session.dart';
 
+/// Workout detection service using Health Connect (Android) and HealthKit (iOS)
+/// 
+/// **Data Limitations & Known Issues:**
+/// 
+/// 1. **Step-Based Rep Estimation (UNRELIABLE)**
+///    - Uses step count as a proxy for exercise reps when workout data unavailable
+///    - Not all exercises generate step-like movements (e.g., push-ups, planks)
+///    - Conservative multipliers applied but accuracy varies significantly
+///    - Minimum threshold of 20 steps required to prevent noise
+///    - Recommended: Use manual input for rep-based exercises when accuracy matters
+/// 
+/// 2. **Workout Session Detection**
+///    - Requires user to actively record workouts in health apps (Google Fit, Apple Health)
+///    - If no workout session detected: falls back to step estimation or simulation
+///    - Workout data may have delay (not real-time on some devices)
+///    - Rep-specific metrics not currently parsed from workout data (see TODO at line ~205)
+/// 
+/// 3. **Circuit Breaker Recovery**
+///    - Opens after 3 consecutive health API failures (prevents battery drain)
+///    - Automatically resets when starting a new workout (provides recovery opportunity)
+///    - Falls back to simulation mode when circuit open
+///    - Transient network/permission issues get retried on next workout
+/// 
+/// 4. **Platform Behavior**
+///    - iOS: Device must be unlocked to access HealthKit data
+///    - Android: Requires Health Connect app installed and permissions granted
+///    - Web/Desktop: Falls back to manual input or simulation mode
 class WorkoutDetectionService {
   static final WorkoutDetectionService _instance = WorkoutDetectionService._internal();
   factory WorkoutDetectionService() => _instance;
@@ -153,6 +180,23 @@ class WorkoutDetectionService {
 
   /// Monitor health data updates (Health Connect on Android, HealthKit on iOS)
   /// 
+  /// **Polling Behavior:**
+  /// - Polls every 5 seconds for new health data
+  /// - Queries entire workout window (from start to now) on each poll
+  /// - 10-second timeout per API call to prevent hanging
+  /// - Reentrancy guard prevents overlapping polls
+  /// 
+  /// **Fallback Strategy (Priority Order):**
+  /// 1. Workout/Exercise session data (preferred, contains structured metrics)
+  /// 2. Step count data (unreliable for reps, see class-level docs)
+  /// 3. Circuit breaker opens → falls back to simulation mode
+  /// 
+  /// **When No Data Detected:**
+  /// - No workout session: Continues polling, may use step fallback
+  /// - No steps detected: No rep updates, waits for next poll cycle
+  /// - Time-based exercises: Duration tracked regardless of health data
+  /// - After 3 consecutive failures: Circuit breaker opens, simulation starts
+  /// 
   /// TODO: Consider using change tokens for more efficient polling
   /// This would reduce API load and improve efficiency for longer workouts
   Future<void> _monitorHealthData(
@@ -215,6 +259,8 @@ class WorkoutDetectionService {
           }
           
           // Priority 2: Fallback to steps (UNRELIABLE - use with caution)
+          // See class-level documentation for step-based estimation limitations
+          // This is a heuristic fallback when proper workout data is unavailable
           if (!repsDetected) {
             try {
               final stepsData = await _health.getHealthDataFromTypes(
@@ -234,7 +280,7 @@ class WorkoutDetectionService {
                   }
                 }
                 
-                // Apply minimum threshold - require meaningful activity
+                // Apply minimum threshold to filter out sensor noise and minor movements
                 const int minStepsThreshold = 20;
                 if (totalSteps >= minStepsThreshold) {
                   // Apply workout-specific multiplier (conservative estimates)
@@ -305,12 +351,14 @@ class WorkoutDetectionService {
           debugPrint('   Failure count: $_healthFailureCount/$_maxHealthFailures');
         }
         
-        // Open circuit breaker if threshold reached
+        // Open circuit breaker if threshold reached (prevents battery drain from repeated failures)
+        // Recovery: Circuit automatically resets when user starts next workout (see startWorkoutDetection)
         if (_healthFailureCount >= _maxHealthFailures) {
           _healthCircuitOpen = true;
           if (kDebugMode) {
             debugPrint('🔌 Circuit breaker opened after $_healthFailureCount consecutive failures');
             debugPrint('   Health API polling will stop and fall back to simulation');
+            debugPrint('   Will retry on next workout session');
           }
         }
       } finally {
