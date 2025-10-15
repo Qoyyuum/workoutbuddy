@@ -120,7 +120,7 @@ class _AnimatedWorkoutBuddyState extends State<AnimatedWorkoutBuddy>
               border: Border.all(color: Colors.red[300]!, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.red.withValues(alpha: 0.3),
+                  color: Colors.red.withOpacity(0.3),
                   blurRadius: 8,
                   spreadRadius: 2,
                 ),
@@ -173,7 +173,7 @@ class _AnimatedWorkoutBuddyState extends State<AnimatedWorkoutBuddy>
               border: Border.all(color: Colors.orange[300]!, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.orange.withValues(alpha: 0.3),
+                  color: Colors.orange.withOpacity(0.3),
                   blurRadius: 8,
                   spreadRadius: 2,
                 ),
@@ -227,7 +227,7 @@ class _AnimatedWorkoutBuddyState extends State<AnimatedWorkoutBuddy>
               border: Border.all(color: Colors.purple[300]!, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.purple.withValues(alpha: 0.3),
+                  color: Colors.purple.withOpacity(0.3),
                   blurRadius: 8,
                   spreadRadius: 2,
                 ),
@@ -283,7 +283,7 @@ class _AnimatedWorkoutBuddyState extends State<AnimatedWorkoutBuddy>
               border: Border.all(color: Colors.green[300]!, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.green.withValues(alpha: 0.3),
+                  color: Colors.green.withOpacity(0.3),
                   blurRadius: 8,
                   spreadRadius: 2,
                 ),
@@ -385,7 +385,7 @@ class _AnimatedWorkoutBuddyState extends State<AnimatedWorkoutBuddy>
               border: Border.all(color: Colors.yellow[600]!, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.yellow.withValues(alpha: 0.4),
+                  color: Colors.yellow.withOpacity(0.4),
                   blurRadius: 12,
                   spreadRadius: 3,
                 ),
@@ -478,7 +478,7 @@ class _AnimatedWorkoutBuddyState extends State<AnimatedWorkoutBuddy>
                 border: Border.all(color: Colors.red[600]!, width: 3),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.red.withValues(alpha: 0.4),
+                    color: Colors.red.withOpacity(0.4),
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),
@@ -532,7 +532,7 @@ class _AnimatedWorkoutBuddyState extends State<AnimatedWorkoutBuddy>
               border: Border.all(color: Colors.blue[600]!, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blue.withValues(alpha: 0.3),
+                  color: Colors.blue.withOpacity(0.3),
                   blurRadius: 8,
                   spreadRadius: 2,
                 ),
