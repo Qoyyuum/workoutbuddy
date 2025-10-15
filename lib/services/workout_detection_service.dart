@@ -175,9 +175,9 @@ class WorkoutDetectionService {
             );
             
             final sessions = sessionData['data'] as List?;
-              _emitCurrentState();
             if (sessions != null && sessions.isNotEmpty) {
               final duration = DateTime.now().difference(_workoutStartTime!);
+              _emitCurrentState();
               if (kDebugMode) {
                 print('⏱️ Health Connect tracking ${workoutType.displayName}: ${duration.inSeconds}s');
               }
