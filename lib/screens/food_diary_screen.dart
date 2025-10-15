@@ -55,9 +55,16 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
         _userProfile = UserProfile.fromMap(profileData);
       }
       
-      // Load food entries for selected period
-      final endDate = DateTime.now();
-      final startDate = endDate.subtract(Duration(days: _selectedDays));
+      // Load food entries for selected period using calendar-day boundaries
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      
+      // End of today (23:59:59.999)
+      final endDate = today.add(const Duration(days: 1)).subtract(const Duration(milliseconds: 1));
+      
+      // Start of earliest day in range
+      final startDate = today.subtract(Duration(days: _selectedDays - 1));
+      
       _entries = await _db.getFoodEntriesByDateRange(startDate, endDate);
       
     } catch (e) {
