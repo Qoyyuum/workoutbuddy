@@ -152,32 +152,72 @@ class WorkoutDetectionService {
 
         // Process the records based on workout type
         if (_isRepBasedExercise(workoutType)) {
-          // For rep-based exercises, check for steps as a proxy
+          // For rep-based exercises, try to get exercise-specific data first
+          bool repsDetected = false;
+          
+          // Priority 1: Try to get ExerciseSession data which may contain rep counts
           try {
-            final stepsData = await HealthConnectFactory.getRecord(
-              type: HealthConnectDataType.Steps,
+            final sessionData = await HealthConnectFactory.getRecord(
+              type: HealthConnectDataType.ExerciseSession,
               startTime: startTime,
               endTime: endTime,
             );
             
-            final records = stepsData['data'] as List?;
-            if (records != null && records.isNotEmpty) {
-              // Sum up steps from the workout period as a proxy for reps
-              int totalSteps = 0;
-              for (var record in records) {
-                totalSteps += (record['count'] as num?)?.toInt() ?? 0;
-              }
-              // Scale down steps to reasonable rep count (rough estimate)
-              _currentReps = (totalSteps / 10).round();
-              _emitCurrentState();
-              
+            final sessions = sessionData['data'] as List?;
+            if (sessions != null && sessions.isNotEmpty) {
+              // TODO: Parse ExerciseSession for rep-specific metrics if available
+              // For now, this is a placeholder for future enhancement
               if (kDebugMode) {
-                print('🔄 Health Connect detected $_currentReps reps for ${workoutType.displayName}');
+                print('📊 ExerciseSession data available but rep parsing not yet implemented');
               }
             }
           } catch (e) {
             if (kDebugMode) {
-              print('⚠️ Could not read steps data: $e');
+              print('⚠️ Could not read exercise session data: $e');
+            }
+          }
+          
+          // Priority 2: Fallback to steps (UNRELIABLE - use with caution)
+          if (!repsDetected) {
+            try {
+              final stepsData = await HealthConnectFactory.getRecord(
+                type: HealthConnectDataType.Steps,
+                startTime: startTime,
+                endTime: endTime,
+              );
+              
+              final records = stepsData['data'] as List?;
+              if (records != null && records.isNotEmpty) {
+                int totalSteps = 0;
+                for (var record in records) {
+                  totalSteps += (record['count'] as num?)?.toInt() ?? 0;
+                }
+                
+                // Apply minimum threshold - require meaningful activity
+                const int minStepsThreshold = 20;
+                if (totalSteps >= minStepsThreshold) {
+                  // Apply workout-specific multiplier (conservative estimates)
+                  final multiplier = _getStepToRepMultiplier(workoutType);
+                  final estimatedReps = (totalSteps * multiplier).round();
+                  
+                  // Only update if estimate is reasonable (prevent wild fluctuations)
+                  if (estimatedReps > 0 && estimatedReps < 1000) {
+                    _currentReps = estimatedReps;
+                    _emitCurrentState();
+                    
+                    if (kDebugMode) {
+                      print('⚠️ WARNING: Using step count as rep proxy (UNRELIABLE)');
+                      print('   Steps: $totalSteps -> Estimated reps: $_currentReps (multiplier: $multiplier)');
+                      print('   ${workoutType.displayName} may not generate step-like movements');
+                      print('   Consider manual input for accuracy');
+                    }
+                  }
+                }
+              }
+            } catch (e) {
+              if (kDebugMode) {
+                print('⚠️ Could not read steps data: $e');
+              }
             }
           }
         } else {
@@ -308,6 +348,37 @@ class WorkoutDetectionService {
       case WorkoutType.walking:
       case WorkoutType.plank:
         return false;
+    }
+  }
+
+  /// Get conservative step-to-rep multiplier for each workout type
+  /// These are rough heuristics and should be used only as fallback estimates
+  double _getStepToRepMultiplier(WorkoutType workoutType) {
+    switch (workoutType) {
+      case WorkoutType.pushUp:
+      case WorkoutType.sitUp:
+      case WorkoutType.pullUp:
+        // Upper body exercises generate minimal steps - very unreliable
+        return 0.05; // 20 steps ≈ 1 rep (extremely conservative)
+      
+      case WorkoutType.squat:
+      case WorkoutType.lunges:
+        // Lower body exercises may register as steps
+        return 0.5; // 2 steps ≈ 1 rep
+      
+      case WorkoutType.burpee:
+        // Full-body movement, generates more motion
+        return 0.3; // ~3 steps ≈ 1 rep
+      
+      case WorkoutType.jumping:
+        // Jumping jacks generate vertical motion
+        return 0.4; // ~2.5 steps ≈ 1 rep
+      
+      case WorkoutType.running:
+      case WorkoutType.walking:
+      case WorkoutType.plank:
+        // Time-based exercises shouldn't use this
+        return 0.0;
     }
   }
 
