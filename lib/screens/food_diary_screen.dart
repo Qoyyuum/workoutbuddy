@@ -237,7 +237,7 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
                 child: LinearProgressIndicator(
                   value: calorieGoal <= 0 
                       ? 0.0 
-                      : (totals['calories']! / calorieGoal).clamp(0.0, 1.0).toDouble(),
+                      : (totals['calories']! / calorieGoal).clamp(0.0, 1.0),
                   minHeight: 8,
                   backgroundColor: Colors.grey[200],
                   valueColor: AlwaysStoppedAnimation<Color>(status['color']),

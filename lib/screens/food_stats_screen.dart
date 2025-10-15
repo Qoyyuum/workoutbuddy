@@ -76,7 +76,7 @@ class _FoodStatsScreenState extends State<FoodStatsScreen> {
     final caloriesRemaining = _calorieGoal - totalCalories;
     final progressPercent = _calorieGoal <= 0 
         ? 0.0 
-        : (totalCalories / _calorieGoal).clamp(0.0, 1.0).toDouble();
+        : (totalCalories / _calorieGoal).clamp(0.0, 1.0);
 
     return Scaffold(
       backgroundColor: const Color(0xFF2C2C2C),

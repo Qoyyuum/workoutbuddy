@@ -72,7 +72,7 @@ class _FoodStatsWearScreenState extends State<FoodStatsWearScreen> {
     final isOver = totalCalories > _calorieGoal;
     final progressPercent = _calorieGoal <= 0 
         ? 0.0 
-        : (totalCalories / _calorieGoal).clamp(0.0, 1.0).toDouble();
+        : (totalCalories / _calorieGoal).clamp(0.0, 1.0);
 
     return Scaffold(
       backgroundColor: const Color(0xFF2C2C2C),
