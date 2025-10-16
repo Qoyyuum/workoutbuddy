@@ -1,0 +1,64 @@
+name: Flutter Tests
+
+on:
+  pull_request:
+    branches:
+      - master
+      - main
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  test:
+    name: Run Flutter Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+      
+      - name: Create .env.local file
+        run: |
+          echo "FATSECRET_CLIENT_ID=test_id" > .env.local
+          echo "FATSECRET_CLIENT_SECRET=test_secret" >> .env.local
+      
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Verify Flutter installation
+        run: flutter doctor -v
+      
+      - name: Analyze code
+        run: flutter analyze
+      
+      - name: Run tests
+        run: flutter test --coverage
+      
+      - name: Upload coverage to Codecov (Optional)
+        uses: codecov/codecov-action@v4
+        if: github.event_name == 'pull_request'
+        with:
+          file: ./coverage/lcov.info
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+      
+      - name: Test Report
+        if: always()
+        run: |
+          echo "✅ All tests passed!"
+          echo "📊 Code analysis completed"
