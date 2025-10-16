@@ -49,6 +49,8 @@ dependencies:
   intl: ^0.20.2
   vector_math: ^2.1.4
   health: ^13.2.1
+  multi_cloud_storage: ^0.5.1
+  watch_connectivity: ^0.2.3
 
 dev_dependencies:
   flutter_test:

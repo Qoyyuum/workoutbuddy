@@ -4,6 +4,7 @@ import '../models/food_diary_entry.dart';
 import '../services/fatsecret_service.dart';
 import '../services/mock_food_service.dart';
 import '../services/database_service.dart';
+import '../services/watch_sync_service.dart';
 import '../models/workout_buddy.dart';
 
 class FoodEntryScreen extends StatefulWidget {
@@ -106,6 +107,12 @@ class _FoodEntryScreenState extends State<FoodEntryScreen> {
 
     try {
       await DatabaseService.instance.insertFoodEntry(entry);
+      
+      // Sync to watch immediately after adding food
+      final watchService = WatchSyncService.instance;
+      if (watchService.canSync) {
+        await watchService.syncToWatch();
+      }
     } catch (e) {
       debugPrint('❌ Error saving food entry: $e');
     }

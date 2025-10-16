@@ -4,6 +4,8 @@ import '../models/food_diary_entry.dart';
 import '../models/user_profile.dart';
 import '../models/workout_buddy.dart';
 import '../services/database_service.dart';
+import '../services/watch_sync_service.dart';
+import '../widgets/watch_status_indicator.dart';
 import 'food_entry_screen.dart';
 
 class FoodDiaryScreen extends StatefulWidget {
@@ -328,8 +330,8 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Entry'),
-        content: Text('Remove "${entry.foodName}" from food diary?'),
+        title: const Text('Delete Entry?'),
+        content: Text('Remove ${entry.foodName} from your diary?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -337,7 +339,7 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -346,6 +348,12 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
     if (confirm == true && entry.id != null) {
       await _db.deleteFoodEntry(entry.id!);
       _loadData(); // Refresh
+      
+      // Sync to watch after deletion
+      final watchService = WatchSyncService.instance;
+      if (watchService.canSync) {
+        await watchService.syncToWatch();
+      }
     }
   }
 
@@ -389,6 +397,20 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
         backgroundColor: Colors.green[700],
         foregroundColor: Colors.white,
         actions: [
+          // Watch status indicator
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: WatchStatusIndicator(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const WatchConnectivityScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
           // Period selector
           PopupMenuButton<int>(
             icon: const Icon(Icons.calendar_today),

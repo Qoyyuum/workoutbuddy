@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../models/user_profile.dart';
 import '../services/database_service.dart';
 import '../services/calorie_calculator.dart';
+import 'sync_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -339,27 +340,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ]),
                   const SizedBox(height: 24),
 
-                  // Future Features Section
+                  // Cloud Backup Section
                   _buildSectionHeader('Cloud Backup', Icons.cloud),
                   _buildCard([
                     ListTile(
-                      leading: const Icon(Icons.cloud_off, color: Colors.white54),
+                      leading: const Icon(Icons.cloud_sync, color: Color(0xFF9CB4A8)),
                       title: const Text(
-                        'Google Drive Backup',
+                        'Google Drive Sync',
                         style: TextStyle(
                           color: Colors.white,
                           fontFamily: 'Pixel Digivolve',
                         ),
                       ),
                       subtitle: const Text(
-                        'Coming soon!',
+                        'Backup and sync your data',
                         style: TextStyle(
                           color: Colors.white54,
                           fontSize: 12,
                           fontFamily: 'Pixel Digivolve',
                         ),
                       ),
+                      trailing: const Icon(Icons.chevron_right, color: Colors.white54),
                       contentPadding: EdgeInsets.zero,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SyncSettingsScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ]),
                   const SizedBox(height: 32),
