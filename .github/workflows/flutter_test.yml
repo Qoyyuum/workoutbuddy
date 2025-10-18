@@ -34,8 +34,8 @@ jobs:
       
       - name: Create .env.local file
         run: |
-          echo "FATSECRET_CLIENT_ID=test_id" > .env.local
-          echo "FATSECRET_CLIENT_SECRET=test_secret" >> .env.local
+          echo "FATSECRET_CLIENT_ID=${{ secrets.FATSECRET_CLIENT_ID }}" > .env.local
+          echo "FATSECRET_CLIENT_SECRET=${{ secrets.FATSECRET_CLIENT_SECRET }}" >> .env.local
       
       - name: Install dependencies
         run: flutter pub get
